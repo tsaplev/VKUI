@@ -5,13 +5,15 @@ const autoprefixer = require('autoprefixer');
 const selectorPrefixer = require('postcss-prefixer');
 const csso = require('postcss-csso');
 
+const importPropsFrom = [
+  path.join(__dirname, 'src/styles/bright_light.css'),
+  path.join(__dirname, 'src/styles/constants.css'),
+  path.join(__dirname, 'src/styles/animations.css'),
+];
 let plugins = [
   cssImport(),
   cssCustomProperties({
-    importFrom: [
-      path.join(__dirname, 'src/styles/bright_light.css'),
-      path.join(__dirname, 'src/styles/constants.css'),
-    ],
+    importFrom: importPropsFrom,
     preserve: true
   }),
   autoprefixer(),
@@ -25,4 +27,4 @@ if (process.env.NODE_ENV === 'production') {
   plugins.push(csso({ restructure: false }));
 }
 
-module.exports = { plugins };
+module.exports = { plugins, importPropsFrom };

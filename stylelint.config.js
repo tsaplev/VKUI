@@ -1,5 +1,10 @@
-{
+const { importPropsFrom } = require('./postcss.config');
+
+module.exports = {
   "extends": "stylelint-config-standard",
+  "plugins": [
+    "stylelint-value-no-unknown-custom-properties"
+  ],
   "rules": {
     "indentation": null,
     "number-leading-zero": "never",
@@ -11,6 +16,9 @@
     "no-duplicate-selectors": null,
     "length-zero-no-unit": [true, {
       "ignore": ["custom-properties"]
+    }],
+    "csstools/value-no-unknown-custom-properties": [true, {
+      "importFrom": importPropsFrom
     }]
   }
-}
+};
