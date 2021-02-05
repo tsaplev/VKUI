@@ -1,6 +1,7 @@
 import { ChangeEvent, useMemo, useState } from 'react';
 import { ChipsInputOption } from '../ChipsInput/ChipsInput';
 import { useChipsInput } from '../ChipsInput/useChipsInput';
+// eslint-disable-next-line import/no-cycle
 import { ChipsSelectProps } from './ChipsSelect';
 
 export const useChipsSelect = <Option extends ChipsInputOption>(props: Partial<ChipsSelectProps<Option>>) => {

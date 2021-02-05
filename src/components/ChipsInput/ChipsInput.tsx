@@ -12,6 +12,7 @@ import FormField from '../FormField/FormField';
 import classNames from '../../lib/classNames';
 import Chip, { ChipProps } from '../Chip/Chip';
 import { noop } from '../../lib/utils';
+// eslint-disable-next-line import/no-cycle
 import { useChipsInput } from './useChipsInput';
 import withAdaptivity, { AdaptivityProps } from '../../hoc/withAdaptivity';
 

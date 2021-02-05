@@ -1,5 +1,6 @@
 import { RefCallback } from 'react';
 import { PlatformType } from './lib/platform';
+import { Version as _Version } from './lib/version';
 import { Insets } from '@vkontakte/vk-bridge';
 
 export type AnyFunction = (...args: any[]) => any;
@@ -38,8 +39,4 @@ export interface HasInsets {
   insets?: Partial<Insets>;
 }
 
-export interface Version {
-  major: number;
-  minor?: number;
-  patch?: number;
-}
+export type Version = _Version;

@@ -1,5 +1,8 @@
 {
-  "extends": ["@vkontakte/eslint-config/typescript/react"],
+  "extends": [
+    "@vkontakte/eslint-config/typescript/react",
+    "plugin:import/typescript"
+  ],
   "parserOptions": {
     "project": "./tsconfig.json",
     "ecmaVersion": 2018, // Allows for the parsing of modern ECMAScript features
@@ -10,6 +13,9 @@
       "spread": true
     }
   },
+  "plugins": [
+    "import"
+  ],
   "globals": {
     "Element": true
   },
@@ -25,6 +31,7 @@
     "@typescript-eslint/no-unused-vars": ["error", {
       "ignoreRestSiblings": true
     }],
+    "import/no-cycle": "error",
     "no-restricted-imports": ["error", {
       "patterns": ["@vkontakte/icons/dist/*"]
     }]

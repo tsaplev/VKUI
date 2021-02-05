@@ -1,4 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+// eslint-disable-next-line import/no-cycle
 import { ChipsInputOption, ChipsInputProps, ChipsInputValue } from './ChipsInput';
 
 export const useChipsInput = <Option extends ChipsInputOption>(props: Partial<ChipsInputProps<Option>>) => {
