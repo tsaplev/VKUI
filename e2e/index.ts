@@ -21,7 +21,7 @@ export async function screenshot(jsx: ReactElement) {
   /* istanbul ignore next */
   const { x, y, bottom, right } = await page.evaluate(() => {
     const size = { right: 0, bottom: 0, x: Infinity, y: Infinity };
-    document.querySelectorAll('#mount > *').forEach((node) => {
+    (document as UnsafeDocument).querySelectorAll('#mount > *').forEach((node) => {
       const { x, y, right, bottom } = node.getBoundingClientRect();
       size.right = Math.max(size.right, right);
       size.bottom = Math.max(size.bottom, bottom);

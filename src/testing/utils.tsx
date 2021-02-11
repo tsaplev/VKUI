@@ -38,7 +38,7 @@ export function baselineComponent<Props extends BasicProps>(
     domAttr && expect(screen.queryByTestId('__cmp__')).toBeTruthy();
 
     if (className || style) {
-      const styledNode = document.querySelector<HTMLElement>('.__cls__');
+      const styledNode = (document as UnsafeDocument).querySelector<HTMLElement>('.__cls__');
       // forwards className
       className && expect(styledNode).toBeTruthy();
       const customClassList = Array.from(styledNode.classList).filter((cls) => cls !== '__cls__');
