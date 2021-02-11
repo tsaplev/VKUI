@@ -5,9 +5,12 @@ import ReactDOM from 'react-dom';
 import { canUseDOM, DOMProps, withDOM } from '../../lib/dom';
 import { setRef } from '../../lib/utils';
 import Subhead from '../Typography/Subhead/Subhead';
+import { TooltipContainerContext } from './TooltipContainer';
 
 interface TooltipPortalProps extends Partial<TooltipProps> {
   target?: HTMLElement;
+  container?: HTMLElement;
+  fixed?: boolean;
 }
 
 interface TooltipPortalState {
@@ -30,42 +33,21 @@ const baseClassName = getClassName('Tooltip');
 
 const TooltipPortal = withDOM<TooltipPortalProps>(
   class TooltipPortalClass extends Component<TooltipPortalProps & DOMProps, TooltipPortalState> {
-    constructor(props: TooltipPortalProps) {
-      super(props);
-
-      this.state = {
-        x: 0,
-        y: 0,
-      };
-
-      this.fixedPortal = false;
-
-      const { target } = props;
-      const closestFixed = target.closest<HTMLElement>('.FixedLayout');
-      const closestHeader = target.closest<HTMLElement>('.PanelHeader__in');
-      const closestPanel = target.closest<HTMLElement>('.Panel__in');
-
-      if (closestFixed || closestHeader) {
-        this.fixedPortal = true;
-      }
-
-      this.portalTarget = closestFixed || closestHeader || closestPanel;
-    }
+    state = {
+      x: 0,
+      y: 0,
+    };
 
     get document() {
       return this.props.document;
     }
 
-    fixedPortal: boolean;
-
     el: HTMLDivElement;
 
-    portalTarget: HTMLElement;
-
     getBoundingTargetRect: GetBoundingTargetRect = () => {
-      const { target } = this.props;
+      const { target, container } = this.props;
       const targetBounds = target.getBoundingClientRect();
-      const portalBounds = this.portalTarget.getBoundingClientRect();
+      const portalBounds = container.getBoundingClientRect();
 
       return {
         width: targetBounds.width,
@@ -94,7 +76,7 @@ const TooltipPortal = withDOM<TooltipPortalProps>(
     getRef: RefCallback<HTMLDivElement> = (el) => this.el = el;
 
     render() {
-      const { header, text, alignX, alignY, cornerOffset, mode } = this.props;
+      const { header, text, alignX, alignY, cornerOffset, mode, fixed, container } = this.props;
 
       return ReactDOM.createPortal(
         <div className={
@@ -104,7 +86,7 @@ const TooltipPortal = withDOM<TooltipPortalProps>(
             `Tooltip--y-${alignY}`,
             `Tooltip--${mode}`,
             {
-              'Tooltip--fixed': this.fixedPortal,
+              'Tooltip--fixed': fixed,
             },
           )}>
           <div className="Tooltip__container" style={{ top: this.state.y, left: this.state.x }} ref={this.getRef}>
@@ -114,7 +96,7 @@ const TooltipPortal = withDOM<TooltipPortalProps>(
               {text && <Subhead weight="regular" className="Tooltip__text">{text}</Subhead>}
             </div>
           </div>
-        </div>, this.portalTarget);
+        </div>, container);
     }
   },
 );
@@ -215,7 +197,9 @@ export default class Tooltip extends Component<TooltipProps, TooltipState> {
     return (
       <Fragment>
         {child}
-        <TooltipPortal {...portalProps} target={this.targetEl} />
+        <TooltipContainerContext.Consumer>
+          {(ctx) => <TooltipPortal {...portalProps} {...ctx} target={this.targetEl} />}
+        </TooltipContainerContext.Consumer>
       </Fragment>
     );
   }
