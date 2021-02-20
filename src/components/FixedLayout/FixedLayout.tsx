@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, RefCallback } from 'react';
+import React, { HTMLAttributes } from 'react';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
 import { transitionEndEventName, TransitionStartEventDetail, transitionStartEventName } from '../View/View';
@@ -6,7 +6,7 @@ import { withContext } from '../../hoc/withContext';
 import { HasPlatform, HasRootRef } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { withPanelContext } from '../Panel/withPanelContext';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { SplitColContext, SplitColContextProps } from '../SplitCol/SplitCol';
 import { TooltipContainer } from '../Tooltip/TooltipContainer';
 import { PanelContextProps } from '../Panel/PanelContext';
@@ -40,8 +40,6 @@ class FixedLayout extends React.Component<FixedLayoutProps & DOMProps & PanelCon
     top: null,
     width: '',
   };
-
-  el: HTMLDivElement;
 
   private onMountResizeTimeout: number;
 
@@ -97,7 +95,7 @@ class FixedLayout extends React.Component<FixedLayoutProps & DOMProps & PanelCon
     if (fromPanelHasScroll || toPanelHasScroll && this.canTargetPanelScroll) {
       this.setState({
         position: 'absolute',
-        top: this.el.offsetTop + panelScroll,
+        top: this.rootRef.current.offsetTop + panelScroll,
         width: '',
       });
     }
@@ -125,10 +123,7 @@ class FixedLayout extends React.Component<FixedLayoutProps & DOMProps & PanelCon
     }
   };
 
-  getRef: RefCallback<HTMLDivElement> = (element) => {
-    this.el = element;
-    setRef(element, this.props.getRootRef);
-  };
+  rootRef = multiRef<HTMLDivElement>((e) => setRef(e, this.props.getRootRef));
 
   render() {
     const {
@@ -139,7 +134,7 @@ class FixedLayout extends React.Component<FixedLayoutProps & DOMProps & PanelCon
       <TooltipContainer
         {...restProps}
         fixed
-        ref={this.getRef}
+        ref={this.rootRef}
         className={classNames(getClassName('FixedLayout', platform), {
           'FixedLayout--filled': filled,
         }, `FixedLayout--${vertical}`, className)}

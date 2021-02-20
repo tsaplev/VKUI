@@ -1,4 +1,4 @@
-import React, { AllHTMLAttributes, Component, ElementType, RefCallback } from 'react';
+import React, { AllHTMLAttributes, Component, ElementType } from 'react';
 import Touch, { TouchEvent, TouchEventHandler, TouchProps } from '../Touch/Touch';
 import TouchRootContext from '../Touch/TouchContext';
 import { classNames } from '../../lib/classNames';
@@ -9,7 +9,7 @@ import { coordX, coordY, VKUITouchEvent, VKUITouchEventHander } from '../../lib/
 import { HasPlatform, HasRootRef, Ref } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { hasHover } from '@vkontakte/vkjs/lib/InputUtils';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 
 export interface TappableProps extends AllHTMLAttributes<HTMLElement>, HasRootRef<HTMLElement>, HasPlatform, AdaptivityProps {
@@ -92,7 +92,7 @@ class Tappable extends Component<TappableProps, TappableState> {
 
   insideTouchRoot: boolean;
 
-  container: HTMLElement;
+  containerRef = multiRef((e) => setRef(e, this.props.getRootRef));
 
   timeout: number;
 
@@ -189,7 +189,7 @@ class Tappable extends Component<TappableProps, TappableState> {
    */
   onDown: VKUITouchEventHander = (e: VKUITouchEvent) => {
     if (this.props.platform === ANDROID) {
-      const { top, left } = getOffsetRect(this.container);
+      const { top, left } = getOffsetRect(this.containerRef.current);
       const x = coordX(e) - left;
       const y = coordY(e) - top;
       const key = 'wave' + Date.now().toString();
@@ -260,24 +260,17 @@ class Tappable extends Component<TappableProps, TappableState> {
     return storage[this.id];
   };
 
-  /*
-   * Берет ref на DOM-ноду из экземпляра Touch
-   */
-  getRef: RefCallback<HTMLElement> = (container) => {
-    this.container = container;
-    setRef(container, this.props.getRootRef);
-  };
-
   containerHasTransparentBackground = (): boolean => {
-    if (!this.container) {
+    const el = this.containerRef.current;
+    if (!el) {
       return true;
     }
 
-    if (!this.container.style.backgroundColor) {
+    if (!el.style.backgroundColor) {
       return true;
     }
 
-    if (this.container.style.backgroundColor === 'transparent') {
+    if (el.style.backgroundColor === 'transparent') {
       return true;
     }
 
@@ -333,9 +326,9 @@ class Tappable extends Component<TappableProps, TappableState> {
       props.onMove = this.onMove;
       props.onEnd = this.onEnd;
       /* eslint-enable */
-      props.getRootRef = this.getRef;
+      props.getRootRef = this.containerRef;
     } else {
-      props.ref = this.getRef;
+      props.ref = this.containerRef;
     }
 
     return (

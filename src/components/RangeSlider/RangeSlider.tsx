@@ -1,10 +1,10 @@
-import React, { Component, FC, createRef, HTMLAttributes, RefCallback, useCallback, useState } from 'react';
+import React, { Component, FC, createRef, HTMLAttributes, useCallback, useState } from 'react';
 import Touch, { TouchEvent, TouchEventHandler } from '../Touch/Touch';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
 import { HasPlatform, HasRootRef } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { rescale, clamp } from '../../helpers/math';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 
@@ -29,7 +29,7 @@ class RangeSliderDumb extends Component<RangeSliderProps> {
   startX = 0;
   containerWidth = 0;
 
-  container: HTMLDivElement;
+  containerRef = multiRef<HTMLDivElement>((e) => setRef(e, this.props.getRootRef));
   thumbStart = createRef<HTMLDivElement>();
   thumbEnd = createRef<HTMLDivElement>();
 
@@ -38,7 +38,7 @@ class RangeSliderDumb extends Component<RangeSliderProps> {
       return;
     }
 
-    const boundingRect = this.container.getBoundingClientRect();
+    const boundingRect = this.containerRef.current.getBoundingClientRect();
     this.containerWidth = boundingRect.width;
 
     const absolutePosition = e.startX - boundingRect.left;
@@ -110,11 +110,6 @@ class RangeSliderDumb extends Component<RangeSliderProps> {
     return Math.abs(start - value) <= Math.abs(end - value) ? 'start' : 'end';
   }
 
-  getRef: RefCallback<HTMLDivElement> = (container) => {
-    this.container = container;
-    setRef(container, this.props.getRootRef);
-  };
-
   render() {
     const { className, min, max, step, value, defaultValue,
       onChange, getRootRef, platform, sizeY, disabled, ...restProps } = this.props;
@@ -135,7 +130,7 @@ class RangeSliderDumb extends Component<RangeSliderProps> {
           disabled && 'Slider--disabled',
         )}
       >
-        <div ref={this.getRef} className="Slider__in">
+        <div ref={this.containerRef} className="Slider__in">
           <div
             className="Slider__dragger"
             style={{

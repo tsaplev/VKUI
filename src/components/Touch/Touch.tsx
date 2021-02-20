@@ -3,7 +3,6 @@ import React, {
   DragEvent,
   ElementType,
   MouseEvent as ReactMouseEvent,
-  RefCallback,
   AllHTMLAttributes,
 } from 'react';
 import {
@@ -16,7 +15,7 @@ import {
 } from '../../lib/touch';
 import { HasRootRef } from '../../types';
 import { canUseDOM, DOMProps, withDOM } from '../../lib/dom';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 
 export interface TouchProps extends AllHTMLAttributes<HTMLElement>, HasRootRef<HTMLElement> {
   onEnter?(outputEvent: MouseEvent): void;
@@ -65,7 +64,7 @@ class Touch extends Component<TouchProps & DOMProps> {
   preventClickDefault = false;
   stopClickPropagation = false;
   gesture: Partial<Gesture> = {};
-  container: HTMLElement;
+  containerRef = multiRef((e) => setRef(e, this.props.getRootRef));
 
   static defaultProps: TouchProps = {
     Component: 'div',
@@ -82,21 +81,23 @@ class Touch extends Component<TouchProps & DOMProps> {
 
   componentDidMount() {
     if (canUseDOM) {
-      this.container.addEventListener(events[0], this.onStart, { capture: this.props.useCapture, passive: false });
-      touchEnabled && this.subscribe(this.container);
+      const container = this.containerRef.current;
+      container.addEventListener(events[0], this.onStart, { capture: this.props.useCapture, passive: false });
+      touchEnabled && this.subscribe(container);
 
-      this.container.addEventListener('mouseenter', this.onEnter, { capture: this.props.useCapture, passive: true });
-      this.container.addEventListener('mouseleave', this.onLeave, { capture: this.props.useCapture, passive: true });
+      container.addEventListener('mouseenter', this.onEnter, { capture: this.props.useCapture, passive: true });
+      container.addEventListener('mouseleave', this.onLeave, { capture: this.props.useCapture, passive: true });
     }
   }
 
   componentWillUnmount() {
-    this.container.removeEventListener(events[0], this.onStart);
+    const container = this.containerRef.current;
+    container.removeEventListener(events[0], this.onStart);
     // unsubscribe if touchEnabled OR !touchEnabled & gesture in progress
-    this.subscribed && this.unsubscribe(this.container);
+    this.subscribed && this.unsubscribe(container);
 
-    this.container.removeEventListener('mouseenter', this.onEnter);
-    this.container.removeEventListener('mouseleave', this.onLeave);
+    container.removeEventListener('mouseenter', this.onEnter);
+    container.removeEventListener('mouseleave', this.onLeave);
   }
 
   /**
@@ -321,11 +322,6 @@ class Touch extends Component<TouchProps & DOMProps> {
     this.props.onClick && this.props.onClick(e);
   };
 
-  getRef: RefCallback<HTMLElement> = (container) => {
-    this.container = container;
-    setRef(container, this.props.getRootRef);
-  };
-
   render() {
     const {
       onStart,
@@ -349,7 +345,7 @@ class Touch extends Component<TouchProps & DOMProps> {
     } = this.props;
 
     return (
-      <Component {...restProps} onDragStart={this.onDragStart} onClick={this.onClick} ref={this.getRef}>
+      <Component {...restProps} onDragStart={this.onDragStart} onClick={this.onClick} ref={this.containerRef}>
         {this.props.children}
       </Component>
     );

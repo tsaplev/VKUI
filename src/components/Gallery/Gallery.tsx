@@ -5,7 +5,7 @@ import { classNames } from '../../lib/classNames';
 import { withPlatform } from '../../hoc/withPlatform';
 import { HasAlign, HasPlatform, HasRef, HasRootRef } from '../../types';
 import { canUseDOM, withDOM, useDOM, DOMProps } from '../../lib/dom';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 import HorizontalScrollArrow from '../HorizontalScroll/HorizontalScrollArrow';
 
@@ -68,11 +68,11 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
     this.slidesStore = {};
   }
 
-  container: HTMLDivElement;
   slidesStore: {
     [index: string]: HTMLElement;
   };
-  viewport: HTMLElement;
+  containerRef = multiRef<HTMLDivElement>((e) => setRef(e, this.props.getRootRef));
+  viewportRef = multiRef((e) => setRef(e, this.props.getRef));
 
   static defaultProps: Partial<BaseGalleryProps> = {
     slideWidth: '100%',
@@ -97,7 +97,7 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
         };
       });
 
-    const containerWidth = this.container.offsetWidth;
+    const containerWidth = this.containerRef.current.offsetWidth;
     const layerWidth = slides.reduce((val: number, slide: GallerySlidesState) => slide.width + val, 0);
 
     const min = this.calcMin({ containerWidth, layerWidth, slides });
@@ -119,7 +119,7 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
   }
 
   calcMin({ containerWidth, layerWidth, slides }: Pick<GalleryState, 'containerWidth' | 'layerWidth' | 'slides'>) {
-    const viewportWidth = this.viewport.offsetWidth;
+    const viewportWidth = this.viewportRef.current.offsetWidth;
     switch (this.props.align) {
       case 'left':
         return containerWidth - layerWidth;
@@ -136,7 +136,7 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
   }
 
   calcMax({ slides }: Pick<GalleryState, 'slides'>) {
-    const viewportWidth = this.viewport.offsetWidth;
+    const viewportWidth = this.viewportRef.current.offsetWidth;
     if (this.isCenterWithCustomWidth && slides.length) {
       const { width, coordX } = slides[0];
       return viewportWidth / 2 - coordX - width / 2;
@@ -161,7 +161,7 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
       const { coordX, width } = targetSlide;
 
       if (this.isCenterWithCustomWidth) {
-        const viewportWidth = this.viewport.offsetWidth;
+        const viewportWidth = this.viewportRef.current.offsetWidth;
         return viewportWidth / 2 - coordX - width / 2;
       }
 
@@ -296,16 +296,6 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
     this.slidesStore[`slide-${id}`] = slide;
   };
 
-  getViewportRef: RefCallback<HTMLElement> = (viewport) => {
-    this.viewport = viewport;
-    setRef(viewport, this.props.getRef);
-  };
-
-  getRootRef: RefCallback<HTMLDivElement> = (container) => {
-    this.container = container;
-    setRef(container, this.props.getRootRef);
-  };
-
   componentDidMount() {
     this.initializeSlides({ animation: false });
     this.props.window.addEventListener('resize', this.onResize);
@@ -368,7 +358,7 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
       <div {...restProps} className={classNames(getClassName('Gallery', platform), className, `Gallery--${align}`, {
         'Gallery--dragging': dragging,
         'Gallery--custom-width': slideWidth === 'custom',
-      })} ref={this.getRootRef}>
+      })} ref={this.containerRef}>
         <Touch
           className="Gallery__viewport"
           onStartX={this.onStart}
@@ -376,7 +366,7 @@ class BaseGallery extends Component<BaseGalleryProps & DOMProps & AdaptivityProp
           onEnd={this.onEnd}
           noSlideClick
           style={{ width: slideWidth === 'custom' ? '100%' : slideWidth }}
-          getRootRef={this.getViewportRef}
+          getRootRef={this.viewportRef}
         >
           <div className="Gallery__layer" style={layerStyle}>
             {React.Children.map(children, (item: ReactElement, i: number) =>

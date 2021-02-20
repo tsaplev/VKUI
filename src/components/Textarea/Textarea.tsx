@@ -1,8 +1,8 @@
-import React, { ChangeEvent, ChangeEventHandler, PureComponent, TextareaHTMLAttributes, RefCallback } from 'react';
+import React, { ChangeEvent, ChangeEventHandler, PureComponent, TextareaHTMLAttributes } from 'react';
 import { classNames } from '../../lib/classNames';
 import FormField from '../FormField/FormField';
 import { HasRef, HasRootRef } from '../../types';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 import { getClassName, HasPlatform } from '../..';
 import { withPlatform } from '../../hoc/withPlatform';
@@ -38,7 +38,7 @@ class Textarea extends PureComponent<TextareaProps, TextareaState> {
   }
 
   isControlledOutside?: boolean;
-  element: HTMLTextAreaElement;
+  elementRef = multiRef<HTMLTextAreaElement>((e) => setRef(e, this.props.getRef));
 
   componentDidMount() {
     if (this.props.grow) {
@@ -52,13 +52,8 @@ class Textarea extends PureComponent<TextareaProps, TextareaState> {
     grow: true,
   };
 
-  getRef: RefCallback<HTMLTextAreaElement> = (element) => {
-    this.element = element;
-    setRef(element, this.props.getRef);
-  };
-
   resize: VoidFunction = () => {
-    const el = this.element;
+    const el = this.elementRef.current;
 
     if (el) {
       const { offsetHeight, scrollHeight } = el;
@@ -108,7 +103,7 @@ class Textarea extends PureComponent<TextareaProps, TextareaState> {
     if (prevProps.value && this.props.value === '') {
       // Fix iOS extra indent on removing content
       window.requestAnimationFrame(() => {
-        this.element.value = '';
+        this.elementRef.current.value = '';
       });
     }
   }
@@ -130,7 +125,7 @@ class Textarea extends PureComponent<TextareaProps, TextareaState> {
           className="Textarea__el"
           value={this.value}
           onChange={this.onChange}
-          ref={this.getRef}
+          ref={this.elementRef}
           style={{ height }}
         />
       </FormField>

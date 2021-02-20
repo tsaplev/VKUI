@@ -1,10 +1,10 @@
-import React, { ChangeEvent, ChangeEventHandler, RefCallback, SelectHTMLAttributes } from 'react';
+import React, { ChangeEvent, ChangeEventHandler, SelectHTMLAttributes } from 'react';
 import { classNames } from '../../lib/classNames';
 import { Icon20Dropdown, Icon24Dropdown } from '@vkontakte/icons';
 import FormField from '../FormField/FormField';
 import { HasAlign, HasRef, HasRootRef } from '../../types';
 import { withAdaptivity, AdaptivityProps, SizeType } from '../../hoc/withAdaptivity';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { getClassName, HasPlatform } from '../..';
 import { withPlatform } from '../../hoc/withPlatform';
 import Headline from '../Typography/Headline/Headline';
@@ -44,7 +44,7 @@ class NativeSelect extends React.Component<NativeSelectProps, SelectState> {
   }
 
   isControlledOutside?: boolean;
-  selectEl?: HTMLSelectElement;
+  selectRef = multiRef<HTMLSelectElement>((e) => setRef(e, this.props.getRef));
 
   onChange: ChangeEventHandler = (e: ChangeEvent<HTMLSelectElement>) => {
     this.setTitle();
@@ -57,7 +57,8 @@ class NativeSelect extends React.Component<NativeSelectProps, SelectState> {
   };
 
   setTitle: VoidFunction = () => {
-    const selectedOption = this.selectEl.options[this.selectEl.selectedIndex];
+    const select = this.selectRef.current;
+    const selectedOption = select.options[select.selectedIndex];
     selectedOption && this.setState({
       title: selectedOption.text,
       notSelected: selectedOption.value === '' && this.props.hasOwnProperty('placeholder'),
@@ -77,11 +78,6 @@ class NativeSelect extends React.Component<NativeSelectProps, SelectState> {
   get value() {
     return this.isControlledOutside ? this.props.value : this.state.value;
   }
-
-  getRef: RefCallback<HTMLSelectElement> = (element) => {
-    this.selectEl = element;
-    setRef(element, this.props.getRef);
-  };
 
   render() {
     const { style, value, defaultValue, onChange, align, placeholder, children, className,
@@ -108,7 +104,7 @@ class NativeSelect extends React.Component<NativeSelectProps, SelectState> {
           className="Select__el"
           onChange={this.onChange}
           value={this.value}
-          ref={this.getRef}
+          ref={this.selectRef}
         >
           {placeholder && <option value="">{placeholder}</option>}
           {children}

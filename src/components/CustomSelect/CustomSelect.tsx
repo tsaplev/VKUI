@@ -6,7 +6,7 @@ import React, {
   SelectHTMLAttributes,
 } from 'react';
 import SelectMimicry from '../SelectMimicry/SelectMimicry';
-import { debounce, setRef } from '../../lib/utils';
+import { debounce, multiRef, setRef } from '../../lib/utils';
 import { classNames } from '../../lib/classNames';
 import { NativeSelectProps } from '../NativeSelect/NativeSelect';
 import CustomScrollView from '../CustomScrollView/CustomScrollView';
@@ -74,8 +74,8 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
 
   public state: CustomSelectState;
   private keyboardInput: string;
-  private node: HTMLLabelElement;
-  private selectEl: HTMLSelectElement;
+  private readonly nodeRef = multiRef<HTMLLabelElement>((e) => setRef(e, this.props.getRootRef));
+  private readonly selectRef = multiRef<HTMLSelectElement>((e) => setRef(e, this.props.getRef));
   private readonly scrollBoxRef = createRef<HTMLDivElement>();
 
   private readonly resetKeyboardInput = () => {
@@ -139,7 +139,7 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
       value: item.value,
     }, () => {
       const event = new Event('change', { bubbles: true });
-      this.selectEl.dispatchEvent(event);
+      this.selectRef.current.dispatchEvent(event);
     });
     this.close();
   };
@@ -154,7 +154,7 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
     }));
 
     const event = new Event('focus');
-    this.selectEl.dispatchEvent(event);
+    this.selectRef.current.dispatchEvent(event);
   };
 
   onBlur = () => {
@@ -166,11 +166,11 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
     }));
 
     const event = new Event('blur');
-    this.selectEl.dispatchEvent(event);
+    this.selectRef.current.dispatchEvent(event);
   };
 
   handleDocumentClick = (event: Event) => {
-    const thisNode = this.node;
+    const thisNode = this.nodeRef.current;
 
     if (this.state.opened && thisNode && !thisNode.contains(event.target as Node)) {
       this.onBlur();
@@ -337,16 +337,6 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
     );
   };
 
-  rootRef = (element: HTMLLabelElement) => {
-    this.node = element;
-    setRef(element, this.props.getRootRef);
-  };
-
-  selectRef = (element: HTMLSelectElement) => {
-    this.selectEl = element;
-    setRef(element, this.props.getRef);
-  };
-
   render() {
     const { opened, value } = this.state;
     const {
@@ -373,7 +363,7 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
       <label
         className={classNames(getClassName('CustomSelect', platform), className)}
         style={style}
-        ref={this.rootRef}
+        ref={this.nodeRef}
       >
         <SelectMimicry
           {...restProps}

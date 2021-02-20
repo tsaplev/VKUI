@@ -4,7 +4,7 @@ import Button, { VKUIButtonProps } from '../Button/Button';
 import { classNames } from '../../lib/classNames';
 import { HasRef, HasRootRef } from '../../types';
 import { usePlatform } from '../../hooks/usePlatform';
-import { setRef } from '../../lib/utils';
+import { useMultiRef } from '../../hooks/useMultiRef';
 
 export interface FileProps extends
   Omit<VKUIButtonProps, 'size'>,
@@ -22,10 +22,7 @@ const File: FunctionComponent<FileProps> = (props: FileProps) => {
   const platform = usePlatform();
   const inputRef = useRef<HTMLInputElement>();
 
-  const getInputRef = (element: HTMLInputElement) => {
-    inputRef.current = element;
-    setRef(element, getRef);
-  };
+  const getInputRef = useMultiRef(getRef);
 
   return (
     <Button

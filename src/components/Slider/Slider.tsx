@@ -1,11 +1,11 @@
-import React, { Component, HTMLAttributes, RefCallback } from 'react';
+import React, { Component, HTMLAttributes } from 'react';
 import Touch, { TouchEventHandler, TouchEvent } from '../Touch/Touch';
 import { classNames } from '../../lib/classNames';
 import { getClassName } from '../../helpers/getClassName';
 import { HasPlatform, HasRootRef } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { canUseDOM } from '../../lib/dom';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 import { precisionRound } from '../../helpers/math';
 
@@ -48,14 +48,14 @@ class Slider extends Component<SliderProps, SliderState> {
 
   isControlledOutside: boolean;
 
-  container: HTMLDivElement;
+  containerRef = multiRef<HTMLDivElement>((e) => setRef(e, this.props.getRootRef));
 
   onStart: TouchEventHandler = (e: TouchEvent) => {
     if (this.props.disabled) {
       return;
     }
 
-    const boundingRect = this.container.getBoundingClientRect();
+    const boundingRect = this.containerRef.current.getBoundingClientRect();
     this.setState({
       containerWidth: boundingRect.width,
     }, () => {
@@ -146,7 +146,7 @@ class Slider extends Component<SliderProps, SliderState> {
 
   componentDidMount() {
     if (canUseDOM) {
-      const boundingRect = this.container.getBoundingClientRect();
+      const boundingRect = this.containerRef.current.getBoundingClientRect();
       this.setState({
         containerWidth: boundingRect.width,
       }, () => {
@@ -160,11 +160,6 @@ class Slider extends Component<SliderProps, SliderState> {
       this.setState({ percentPosition: this.validatePercent(this.valueToPercent(this.props.value)) });
     }
   }
-
-  getRef: RefCallback<HTMLDivElement> = (container) => {
-    this.container = container;
-    setRef(container, this.props.getRootRef);
-  };
 
   render() {
     const { className, min, max, step, value, defaultValue,
@@ -180,7 +175,7 @@ class Slider extends Component<SliderProps, SliderState> {
           disabled && 'Slider--disabled',
         )}
       >
-        <Touch getRootRef={this.getRef} onStart={this.onStart} onMoveX={this.onMoveX} className="Slider__in">
+        <Touch getRootRef={this.containerRef} onStart={this.onStart} onMoveX={this.onMoveX} className="Slider__in">
           <div className="Slider__dragger" style={{ width: `${this.state.percentPosition}%` }}>
             <span
               className={classNames('Slider__thumb', 'Slider__thumb--end')}

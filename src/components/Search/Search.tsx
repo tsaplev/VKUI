@@ -15,7 +15,7 @@ import { IOS, VKCOM } from '../../lib/platform';
 import { HasPlatform, HasRef } from '../../types';
 import Touch, { TouchEventHandler, TouchEvent } from '../Touch/Touch';
 import { VKUITouchEvent } from '../../lib/touch';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 import Text from '../Typography/Text/Text';
 import Title from '../Typography/Title/Title';
 import { Separator } from '../../index';
@@ -50,7 +50,7 @@ class Search extends Component<SearchProps, SearchState> {
 
   isControlledOutside: boolean;
 
-  inputEl: HTMLInputElement;
+  inputRef = multiRef<HTMLInputElement>((e) => setRef(e, this.props.getRef));
 
   searchId: string;
 
@@ -97,10 +97,10 @@ class Search extends Component<SearchProps, SearchState> {
   onCancel: VoidFunction = () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-    nativeInputValueSetter.call(this.inputEl, '');
+    nativeInputValueSetter.call(this.inputRef.current, '');
 
     const ev2 = new Event('input', { bubbles: true });
-    this.inputEl.dispatchEvent(ev2);
+    this.inputRef.current.dispatchEvent(ev2);
   };
 
   onIconClickStart: TouchEventHandler = (e: TouchEvent) => {
@@ -109,13 +109,8 @@ class Search extends Component<SearchProps, SearchState> {
 
   onIconCancelClickStart: TouchEventHandler = (e: TouchEvent) => {
     e.originalEvent.preventDefault();
-    this.inputEl.focus();
+    this.inputRef.current.focus();
     this.onCancel();
-  };
-
-  inputRef: InputRef = (element: HTMLInputElement) => {
-    this.inputEl = element;
-    setRef(element, this.props.getRef);
   };
 
   render() {

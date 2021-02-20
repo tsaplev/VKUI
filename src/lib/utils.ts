@@ -74,7 +74,7 @@ export function setRef<T>(element: T, ref: Ref<T>): void {
   }
 }
 
-export function multiRef<T>(...refs: Array<Ref<T>>): RefWithCurrent<T> {
+export function multiRef<T = HTMLElement>(...refs: Array<Ref<T>>): RefWithCurrent<T> {
   let current: T | null = null;
   return {
     get current() {

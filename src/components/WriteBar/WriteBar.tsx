@@ -7,10 +7,11 @@ import React, {
   TextareaHTMLAttributes,
 } from 'react';
 import { usePlatform } from '../../hooks/usePlatform';
-import { hasReactNode, isFunction, setRef } from '../../lib/utils';
+import { hasReactNode, isFunction } from '../../lib/utils';
 import { classNames } from '../../lib/classNames';
 import { getClassName } from '../../helpers/getClassName';
 import { HasRef, HasRootRef } from '../../types';
+import { useMultiRef } from '../../hooks/useMultiRef';
 
 export interface WriteBarProps extends TextareaHTMLAttributes<HTMLTextAreaElement>, HasRootRef<HTMLDivElement>, HasRef<HTMLTextAreaElement> {
   /**
@@ -54,7 +55,7 @@ export const WriteBar: FC<WriteBarProps> = (props: WriteBarProps) => {
 
   const isControlledOutside = value != null;
 
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const textareaRef = useMultiRef(getRef);
   const textareaMinHeightRef = useRef<number | null>(null);
 
   const resize = () => {
@@ -98,11 +99,6 @@ export const WriteBar: FC<WriteBarProps> = (props: WriteBarProps) => {
     }
   };
 
-  const getTextareaElRef = (element: HTMLTextAreaElement) => {
-    textareaRef.current = element;
-    setRef(element, getRef);
-  };
-
   useEffect(() => {
     resize();
   }, [value]);
@@ -125,7 +121,7 @@ export const WriteBar: FC<WriteBarProps> = (props: WriteBarProps) => {
             {...restProps}
             className="WriteBar__textarea"
             onChange={onTextareaChange}
-            ref={getTextareaElRef}
+            ref={textareaRef}
             value={value}
           />
 

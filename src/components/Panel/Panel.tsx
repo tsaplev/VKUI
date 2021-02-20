@@ -1,4 +1,4 @@
-import React, { Component, HTMLAttributes, RefCallback } from 'react';
+import React, { Component, HTMLAttributes } from 'react';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
 import Touch from '../Touch/Touch';
@@ -8,7 +8,7 @@ import { HasPlatform, HasRootRef } from '../../types';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 import { PanelContext, PanelContextProps } from './PanelContext';
 import { IOS } from '../../lib/platform';
-import { setRef } from '../../lib/utils';
+import { multiRef, setRef } from '../../lib/utils';
 
 export interface PanelProps extends HTMLAttributes<HTMLDivElement>, HasPlatform, HasRootRef<HTMLDivElement>, AdaptivityProps {
   id: string;
@@ -20,7 +20,7 @@ class Panel extends Component<PanelProps> {
     super(props);
     this.childContext = {
       panel: props.id,
-      getPanelNode: () => this.container,
+      getPanelNode: () => this.containerRef.current,
     };
   }
 
@@ -31,12 +31,7 @@ class Panel extends Component<PanelProps> {
     centered: false,
   };
 
-  container: HTMLDivElement;
-
-  getRef: RefCallback<HTMLDivElement> = (container) => {
-    this.container = container;
-    setRef(container, this.props.getRootRef);
-  };
+  containerRef = multiRef<HTMLDivElement>((e) => setRef(e, this.props.getRootRef));
 
   render() {
     const { className, centered, children, platform, getRootRef, sizeX, ...restProps } = this.props;
@@ -45,7 +40,7 @@ class Panel extends Component<PanelProps> {
       <PanelContext.Provider value={this.childContext}>
         <div
           {...restProps}
-          ref={this.getRef}
+          ref={this.containerRef}
           className={classNames(getClassName('Panel', platform), className, `Panel--${sizeX}`, {
             'Panel--centered': centered,
             [`Panel--sizeX-${sizeX}`]: true,
