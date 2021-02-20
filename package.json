@@ -170,5 +170,7 @@
   "pre-commit": [
     "test:static"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "mitt": "^2.1.0"
+  }
 }

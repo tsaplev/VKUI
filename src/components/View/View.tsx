@@ -1,4 +1,5 @@
 import React, { Component, CSSProperties, HTMLAttributes, ReactNode, ReactElement } from 'react';
+import mitt from 'mitt';
 import { classNames } from '../../lib/classNames';
 import { transitionEvent, animationEvent } from '../../lib/supportEvents';
 import { getClassName } from '../../helpers/getClassName';
@@ -9,11 +10,11 @@ import { HasPlatform } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { withContext } from '../../hoc/withContext';
 import { ConfigProviderContext, ConfigProviderContextInterface } from '../ConfigProvider/ConfigProviderContext';
-import { createCustomEvent } from '../../lib/utils';
 import { SplitColContext, SplitColContextProps } from '../SplitCol/SplitCol';
 import { AppRootPortal } from '../AppRoot/AppRootPortal';
 import { canUseDOM, withDOM, DOMProps } from '../../lib/dom';
 
+export const transitionEvents = mitt();
 export const transitionStartEventName = 'VKUI:View:transition-start';
 export const transitionEndEventName = 'VKUI:View:transition-end';
 
@@ -186,7 +187,7 @@ class View extends Component<ViewProps & DOMProps, ViewState> {
         visiblePanels: [nextPanel],
         scrolls: removeObjectKeys(prevState.scrolls, [prevState.swipeBackPrevPanel]),
       }, () => {
-        this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
+        transitionEvents.emit(transitionEndEventName);
         this.window.scrollTo(0, prevState.scrolls[this.state.activePanel]);
         prevProps.onTransition && prevProps.onTransition({ isBack: true, from: prevPanel, to: nextPanel });
       });
@@ -203,7 +204,7 @@ class View extends Component<ViewProps & DOMProps, ViewState> {
           scrolls,
         },
       };
-      this.document.dispatchEvent(new (this.window as any).CustomEvent(transitionStartEventName, transitionStartEventData));
+      transitionEvents.emit(transitionStartEventName, transitionStartEventData);
       const nextPanelElement = this.pickPanel(this.state.nextPanel);
       const prevPanelElement = this.pickPanel(this.state.prevPanel);
 
@@ -223,7 +224,7 @@ class View extends Component<ViewProps & DOMProps, ViewState> {
           scrolls,
         },
       };
-      this.document.dispatchEvent(new (this.window as any).CustomEvent(transitionStartEventName, transitionStartEventData));
+      transitionEvents.emit(transitionStartEventName, transitionStartEventData);
       this.props.onSwipeBackStart && this.props.onSwipeBackStart();
       const nextPanelElement = this.pickPanel(this.state.swipeBackNextPanel);
       const prevPanelElement = this.pickPanel(this.state.swipeBackPrevPanel);
@@ -305,7 +306,7 @@ class View extends Component<ViewProps & DOMProps, ViewState> {
       const activePanel = this.props.activePanel;
       const isBack = this.state.isBack;
       const prevPanel = this.state.prevPanel;
-      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
+      transitionEvents.emit(transitionEndEventName);
       this.setState({
         prevPanel: null,
         nextPanel: null,
@@ -349,7 +350,7 @@ class View extends Component<ViewProps & DOMProps, ViewState> {
       swipebackStartX: 0,
       swipeBackShift: 0,
     }, () => {
-      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
+      transitionEvents.emit(transitionEndEventName);
     });
   }
 

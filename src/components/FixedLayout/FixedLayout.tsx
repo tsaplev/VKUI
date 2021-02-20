@@ -1,7 +1,7 @@
 import React, { HTMLAttributes, RefCallback } from 'react';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
-import { transitionEndEventName, TransitionStartEventDetail, transitionStartEventName } from '../View/View';
+import { transitionEndEventName, transitionEvents, TransitionStartEventDetail, transitionStartEventName } from '../View/View';
 import { withContext } from '../../hoc/withContext';
 import { HasPlatform, HasRootRef } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
@@ -75,22 +75,24 @@ class FixedLayout extends React.Component<FixedLayoutProps & DOMProps & PanelCon
     this.onMountResizeTimeout = setTimeout(() => this.doResize());
     this.window.addEventListener('resize', this.doResize);
 
-    this.document.addEventListener(transitionStartEventName, this.onViewTransitionStart);
-    this.document.addEventListener(transitionEndEventName, this.onViewTransitionEnd);
+    transitionEvents.on(transitionStartEventName, this.onViewTransitionStart);
+    transitionEvents.on(transitionEndEventName, this.onViewTransitionEnd);
   }
 
   componentWillUnmount() {
     clearInterval(this.onMountResizeTimeout);
     this.window.removeEventListener('resize', this.doResize);
 
-    this.document.removeEventListener(transitionStartEventName, this.onViewTransitionStart);
-    this.document.removeEventListener(transitionEndEventName, this.onViewTransitionEnd);
+    transitionEvents.off(transitionStartEventName, this.onViewTransitionStart);
+    transitionEvents.off(transitionEndEventName, this.onViewTransitionEnd);
   }
 
   onViewTransitionStart: EventListener = (e: CustomEvent<TransitionStartEventDetail>) => {
-    let panelScroll = e.detail.scrolls[this.props.panel] || 0;
-    const fromPanelHasScroll = this.props.panel === e.detail.from && panelScroll > 0;
-    const toPanelHasScroll = this.props.panel === e.detail.to && panelScroll > 0;
+    const { from, to, scrolls } = e.detail;
+    const { panel } = this.props;
+    const panelScroll = scrolls[panel] || 0;
+    const fromPanelHasScroll = panel === from && panelScroll > 0;
+    const toPanelHasScroll = panel === to && panelScroll > 0;
 
     // Для панелей, с которых уходим всегда выставляется скролл
     // Для панелей на которые приходим надо смотреть, есть ли браузерный скролл

@@ -90,23 +90,6 @@ export function multiRef<T>(...refs: Array<Ref<T>>): RefWithCurrent<T> {
 // eslint-disable-next-line
 export const noop = () => {};
 
-export function createCustomEvent(window: any, type: string, eventInitDict?: any) {
-  if (typeof window.CustomEvent !== 'function') {
-    const options = eventInitDict || { bubbles: false, cancelable: false, detail: null };
-
-    const evt = document.createEvent('CustomEvent');
-    evt.initCustomEvent(
-      type,
-      options.bubbles,
-      options.cancelable,
-      options.detail,
-    );
-    return evt;
-  }
-
-  return new window.CustomEvent(type, eventInitDict);
-}
-
 export function getTitleFromChildren(children: ReactNode): string {
   let label = '';
 
