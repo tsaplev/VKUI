@@ -42,7 +42,6 @@ SimpleCell 	 Cell
 SimpleCell 	 CellButton
 SimpleCell 	 FormItem
 SimpleCell 	 PanelHeaderContext
-Spinner 	 ScreenSpinner
 SubnavigationButton 	 SubnavigationBar
 Switch 	 SimpleCell
 Tabs 	 Group
