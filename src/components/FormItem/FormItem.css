@@ -51,7 +51,7 @@
  */
 
 .FormItem--ios,
-.FormItem--ios .Removable {
+.FormItem--ios .FormItem__removable {
   padding-left: 12px;
   padding-right: 12px;
 }
@@ -62,7 +62,7 @@
 .FormItem--ios .CellButton,
 .FormItem--ios .Radio,
 .FormItem--ios .Checkbox,
-.FormItem--ios .Removable {
+.FormItem--ios .FormItem__removable {
   margin-left: -12px;
   margin-right: -12px;
 }

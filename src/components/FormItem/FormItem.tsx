@@ -60,7 +60,7 @@ export const FormItem: FC<FormItemProps> = withAdaptivity((props: FormItemProps 
       )}
     >
       {removable ? (
-        <Removable align="start" onRemove={onRemove} removePlaceholder={removePlaceholder}>
+        <Removable vkuiClass="FormItem__removable" align="start" onRemove={onRemove} removePlaceholder={removePlaceholder}>
           <div>{wrappedChildren}</div>
         </Removable>
       ) : wrappedChildren}

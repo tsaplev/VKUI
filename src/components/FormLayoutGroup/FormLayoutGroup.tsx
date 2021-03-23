@@ -39,7 +39,7 @@ const FormLayoutGroup: FunctionComponent<FormLayoutGroupProps> = withAdaptivity(
       )}
       {...restProps}>
       {isRemovable
-        ? <Removable align="start" removePlaceholder={removePlaceholder} onRemove={onRemove}>{children}</Removable>
+        ? <Removable vkuiClass="FormLayoutGroup__removable" align="start" removePlaceholder={removePlaceholder} onRemove={onRemove}>{children}</Removable>
         : children
       }
     </div>

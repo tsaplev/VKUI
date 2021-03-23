@@ -213,7 +213,7 @@ export const Cell: FC<CellProps> = (props: CellProps) => {
       ref={rootElRef}
     >
       {removable
-        ? <Removable removePlaceholder={removePlaceholder} onRemove={(e) => onRemove(e, rootElRef?.current)}>{simpleCell}</Removable>
+        ? <Removable vkuiClass="Cell__removable" removePlaceholder={removePlaceholder} onRemove={(e) => onRemove(e, rootElRef?.current)}>{simpleCell}</Removable>
         : simpleCell
       }
     </div>

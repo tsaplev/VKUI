@@ -27,20 +27,6 @@ Header 	 Group
 Headline 	 PanelHeaderContent
 HorizontalScroll 	 HorizontalScroll__arrow
 HorizontalScroll 	 Tabs
-Icon 	 Button
-Icon 	 Cell
-Icon 	 CellButton
-Icon 	 Header
-Icon 	 IconButton
-Icon 	 Link
-Icon 	 ModalDismissButton
-Icon 	 ModalPageHeader
-Icon 	 PanelHeaderButton
-Icon 	 RichCell
-Icon 	 Select
-Icon 	 SimpleCell
-Icon 	 SubnavigationButton
-Icon 	 TabsItem
 List 	 PanelHeaderContext
 Panel 	 View
 PanelHeader 	 Panel
@@ -48,7 +34,6 @@ PanelHeaderButton 	 ModalPageHeader
 PanelHeaderButton 	 PanelHeader
 PopoutWrapper 	 ScreenSpinner
 Radio 	 FormItem
-Removable 	 Cell
 Removable 	 FormItem
 Removable 	 FormLayoutGroup
 RichCell 	 FormItem
@@ -68,6 +53,7 @@ UsersStack 	 MiniInfoCell
 UsersStack 	 ModalCard
 UsersStack 	 RichCell
 View 	 Root
+
 none 	 Banner
 none 	 FormField
 none 	 FormStatus
@@ -82,3 +68,17 @@ none 	 RichCell
 none 	 SimpleCell
 none 	 Spinner
 none 	 vkui
+Icon 	 Button
+Icon 	 Cell
+Icon 	 CellButton
+Icon 	 Header
+Icon 	 IconButton
+Icon 	 Link
+Icon 	 ModalDismissButton
+Icon 	 ModalPageHeader
+Icon 	 PanelHeaderButton
+Icon 	 RichCell
+Icon 	 Select
+Icon 	 SimpleCell
+Icon 	 SubnavigationButton
+Icon 	 TabsItem
