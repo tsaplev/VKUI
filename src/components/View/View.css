@@ -40,6 +40,10 @@
   z-index: 1;
 }
 
+.Root--transition .Root__view:not(.Root__view--hide-forward) .View__panel {
+  overflow: hidden;
+}
+
 .View__panel-in {
   height: 100%;
 }

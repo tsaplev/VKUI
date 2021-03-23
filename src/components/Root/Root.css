@@ -20,10 +20,6 @@
   top: 0;
 }
 
-.Root--transition .Root__view:not(.Root__view--hide-forward) .View__panel {
-  overflow: hidden;
-}
-
 .Root__view--show-back,
 .Root__view--hide-forward {
   z-index: 1;
