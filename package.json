@@ -152,7 +152,7 @@
     "dev-all": "concurrently 'yarn:tsc-dev' 'yarn:babel-dev' 'yarn:tsc-cjs-dev' 'yarn:babel-cjs-dev' 'yarn:dev-css-modules' 'yarn:bundle-css-dev'",
     "postcss-dev": "postcss 'src/**/*.css' --base src --dir dist/cssm/ --watch --no-map",
     "bundle-css-dev": "webpack --config webpack.css.config.js --watch",
-    "babel-dev-base": "babel src/ --extensions .tsx,.jsx,.ts,.js --watch",
+    "babel-dev-base": "cross-env NODE_ENV=production babel src/ --extensions .tsx,.jsx,.ts,.js --watch",
     "babel-css-modules-dev": "yarn babel-dev-base --config-file ./babel.css-modules.config.js  --out-dir dist/cssm/",
     "babel-dev": "yarn babel-dev-base --config-file ./babel.global-css.config.js --out-dir dist/",
     "babel-cjs-dev": "yarn babel-dev-base --config-file ./babel.cjs.config.js --out-dir dist/cjs/",

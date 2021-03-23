@@ -3,7 +3,8 @@ const { importPropsFrom } = require('./postcss.config');
 module.exports = {
   "extends": "stylelint-config-standard",
   "plugins": [
-    "stylelint-value-no-unknown-custom-properties"
+    "stylelint-value-no-unknown-custom-properties",
+    "./tasks/stylelint-safe-rule-order"
   ],
   "rules": {
     "indentation": null,
@@ -19,6 +20,7 @@ module.exports = {
     }],
     "csstools/value-no-unknown-custom-properties": [true, {
       "importFrom": importPropsFrom
-    }]
+    }],
+    "vkui/modular-selectors": "error"
   }
 };
