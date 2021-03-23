@@ -24,7 +24,6 @@ FormItem 	 FormLayoutGroup
 Header 	 Group
 HorizontalScroll 	 HorizontalScroll__arrow
 HorizontalScroll 	 Tabs
-List 	 PanelHeaderContext
 Panel 	 View
 PanelHeader 	 Panel
 PanelHeaderButton 	 ModalPageHeader
