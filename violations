@@ -20,11 +20,9 @@ CustomScrollView 	 ChipsSelect
 CustomScrollView 	 CustomSelect
 CustomSelectOption 	 ChipsSelect
 CustomSelectOption 	 CustomSelect
-FixedLayout 	 PanelHeader
 FormField 	 ModalCard
 FormItem 	 FormLayoutGroup
 Header 	 Group
-Headline 	 PanelHeaderContent
 HorizontalScroll 	 HorizontalScroll__arrow
 HorizontalScroll 	 Tabs
 List 	 PanelHeaderContext
@@ -52,7 +50,6 @@ Tabs 	 Group
 UsersStack 	 MiniInfoCell
 UsersStack 	 ModalCard
 UsersStack 	 RichCell
-View 	 Root
 
 none 	 Banner
 none 	 FormField
