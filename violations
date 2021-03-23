@@ -35,7 +35,6 @@ Removable 	 FormItem
 Removable 	 FormLayoutGroup
 RichCell 	 FormItem
 Search 	 PanelHeader
-Select 	 DatePicker
 Separator 	 ModalPage
 Separator 	 Tabs
 SimpleCell 	 Cell
