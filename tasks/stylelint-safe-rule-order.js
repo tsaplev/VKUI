@@ -32,8 +32,8 @@ module.exports = stylelint.createPlugin(
             if (!target) {
               return;
             }
-            const targetModule = target.type == 'class' ? target.value.match(/^([a-z0-9]*)/i)[1] : null;
-            if (targetModule !== modularTarget) {
+            const targetModule = target.type == 'class' ? target.value.match(/^([a-z0-9]*|HorizontalScroll__arrow)/i)[1] : null;
+            if (targetModule !== modularTarget && ![null, 'Icon'].includes(targetModule)) {
               console.log(targetModule || 'none', '\t', modularTarget);
               // const sel = target.type === 'combinator' ? '*' : target.toString();
               // stylelint.utils.report({
