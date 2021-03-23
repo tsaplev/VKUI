@@ -1,4 +1,3 @@
-ActionSheet 	 ActionSheetItem
 AppRoot 	 vkui
 Avatar 	 PanelHeader
 Avatar 	 RichCell
@@ -50,32 +49,3 @@ Tabs 	 Group
 UsersStack 	 MiniInfoCell
 UsersStack 	 ModalCard
 UsersStack 	 RichCell
-
-none 	 Banner
-none 	 FormField
-none 	 FormStatus
-none 	 Gallery
-none 	 ModalPageHeader
-none 	 Panel
-none 	 PanelHeader
-none 	 PanelHeaderButton
-none 	 PopoutWrapper
-none 	 Removable
-none 	 RichCell
-none 	 SimpleCell
-none 	 Spinner
-none 	 vkui
-Icon 	 Button
-Icon 	 Cell
-Icon 	 CellButton
-Icon 	 Header
-Icon 	 IconButton
-Icon 	 Link
-Icon 	 ModalDismissButton
-Icon 	 ModalPageHeader
-Icon 	 PanelHeaderButton
-Icon 	 RichCell
-Icon 	 Select
-Icon 	 SimpleCell
-Icon 	 SubnavigationButton
-Icon 	 TabsItem
