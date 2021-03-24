@@ -23,7 +23,6 @@ Panel 	 View
 PanelHeader 	 Panel
 PanelHeaderButton 	 ModalPageHeader
 PanelHeaderButton 	 PanelHeader
-PopoutWrapper 	 ScreenSpinner
 Radio 	 FormItem
 Removable 	 FormItem
 Removable 	 FormLayoutGroup
