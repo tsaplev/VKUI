@@ -13,7 +13,7 @@ class Example extends React.Component {
   render() {
     return (
       <View activePanel={this.state.activePanel}>
-        <Panel id="panel1">
+        <Panel centered id="panel1">
           <PanelHeader>More</PanelHeader>
           <Group>
             <Cell expandable before={<Icon28UserOutline/>} onClick={() => this.setState({ activePanel: 'panel2' })}>

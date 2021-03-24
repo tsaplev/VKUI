@@ -1,5 +1,6 @@
 .PanelHeader {
   position: relative;
+  width: 100%;
 }
 
 .PanelHeader--vis.PanelHeader--fixed::before {

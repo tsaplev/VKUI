@@ -55,7 +55,7 @@ class Panel extends Component<PanelProps> {
           <Touch Component={TooltipContainer} vkuiClass="Panel__in">
             {platform === IOS && <div vkuiClass="Panel__fade" />}
             <div vkuiClass="Panel__in-before" />
-            {centered ? <div vkuiClass="Panel__centered">{children}</div> : children}
+            {children}
             <div vkuiClass="Panel__in-after" />
           </Touch>
         </div>
