@@ -1,0 +1,11 @@
+.AppRoot {
+  height: 100%;
+}
+
+.vkui__root--embedded .AppRoot {
+  overflow: auto;
+}
+
+.AppRoot--no-mouse {
+  user-select: none;
+}

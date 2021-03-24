@@ -6,6 +6,7 @@ import { withAdaptivity, SizeType, AdaptivityProps } from '../../hoc/withAdaptiv
 import { useIsomorphicLayoutEffect } from '../../lib/useIsomorphicLayoutEffect';
 import { classScopingMode } from '../../lib/classScopingMode';
 import { IconSettingsProvider } from '@vkontakte/icons';
+import './AppRoot.css';
 
 // Используйте classList, но будьте осторожны
 /* eslint-disable no-restricted-properties */

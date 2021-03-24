@@ -33,20 +33,8 @@
   overflow-x: hidden;
 }
 
-.AppRoot {
-  height: 100%;
-}
-
-.vkui__root--embedded .AppRoot {
-  overflow: auto;
-}
-
 .vkui--sizeX-regular {
   background: var(--background_page);
-}
-
-.AppRoot--no-mouse {
-  user-select: none;
 }
 
 .vkui__root input,
