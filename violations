@@ -14,7 +14,6 @@ Card 	 CardScroll
 Cell 	 FormItem
 CellButton 	 FormItem
 Checkbox 	 FormItem
-ChipsInput 	 ChipsSelect
 FormField 	 ModalCard
 FormItem 	 FormLayoutGroup
 Header 	 Group

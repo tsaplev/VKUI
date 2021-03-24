@@ -1,5 +1,6 @@
 .ChipsInput {
   display: flex;
+  align-items: flex-start;
   position: relative;
   /* 2px горизонтального отступа ушли в chip и input-container для 2+2=4px отступа между строками при многострочном инпуте */
   padding: 4px 14px;

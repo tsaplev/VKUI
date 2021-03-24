@@ -256,13 +256,11 @@ const ChipsSelect = <Option extends ChipsInputOption>(props: ChipsSelectProps<Op
           ['ChipsSelect__open']: opened,
           ['ChipsSelect__open--popupDirectionTop']: popupDirection === 'top',
         })}
+        after={<Icon20Dropdown vkuiClass="ChipsSelect__toggle" />}
         getRef={getRef}
         disabled={disabled}
         onInputChange={handleInputChange}
       />
-      <div vkuiClass="ChipsSelect__toggle">
-        <Icon20Dropdown />
-      </div>
       {opened &&
         <div
           vkuiClass={classNames('ChipsSelect__options', {
