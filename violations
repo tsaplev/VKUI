@@ -19,8 +19,6 @@ Header 	 Group
 HorizontalScroll 	 HorizontalScroll__arrow
 HorizontalScroll 	 Tabs
 Panel 	 View
-PanelHeaderButton 	 ModalPageHeader
-PanelHeaderButton 	 PanelHeader
 Radio 	 FormItem
 Removable 	 FormItem
 Removable 	 FormLayoutGroup

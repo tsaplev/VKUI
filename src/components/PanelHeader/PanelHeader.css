@@ -91,12 +91,7 @@
   flex-grow: 1;
   opacity: 1;
   transition: opacity .3s var(--ios-easing);
-  padding: 4px 0 4px 4px;
-}
-
-.PanelHeader--ios .PanelHeader__left .PanelHeaderButton + .PanelHeaderButton--primitive {
-  margin-left: -6px;
-  padding-left: 0;
+  padding: 4px 0 4px 16px;
 }
 
 .PanelHeader--ios .PanelHeader__content {
@@ -111,23 +106,7 @@
 }
 
 .PanelHeader--ios .PanelHeader__content > * {
-  padding: 0 4px;
-}
-
-.PanelHeader--ios.PanelHeader--no-left .PanelHeader__content > * {
-  padding-left: 0;
-}
-
-.PanelHeader--ios.PanelHeader--no-left .PanelHeader__content {
-  padding-left: 8px;
-}
-
-.PanelHeader--ios.PanelHeader--no-right .PanelHeader__content > * {
-  padding-right: 0;
-}
-
-.PanelHeader--ios.PanelHeader--no-right .PanelHeader__content {
-  padding-right: 8px;
+  padding: 0 12px;
 }
 
 .PanelHeader--ios .PanelHeader__right {
@@ -136,7 +115,13 @@
   flex-grow: 1;
   opacity: 1;
   transition: opacity .3s var(--ios-easing);
-  padding: 4px 4px 4px 0;
+  padding: 4px 16px 4px 0;
+}
+
+.PanelHeader--ios .PanelHeader__right:empty,
+.PanelHeader--ios .PanelHeader__left:empty {
+  padding: 0;
+  width: 0;
 }
 
 .View--ios .View__panel--prev .PanelHeader__left,

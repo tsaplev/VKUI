@@ -24,20 +24,24 @@
   display: flex;
   align-items: center;
   font-size: 17px;
-}
-
-.PanelHeaderButton--ios.PanelHeaderButton--primitive {
-  height: 44px;
   line-height: 44px;
+  height: 44px;
   padding: 0 12px;
+  box-sizing: content-box;
+  min-width: 24px;
 }
 
-.PanelHeaderButton--ios .Icon--24 {
-  padding: 10px;
+.PanelHeaderButton--ios:first-child {
+  margin-left: -12px;
 }
 
-.PanelHeaderButton--ios .Icon--28 {
-  padding: 8px;
+.PanelHeaderButton--ios:last-child {
+  margin-right: -12px;
+}
+
+.PanelHeaderButton--ios + .PanelHeaderButton--ios {
+  padding-left: 8px;
+  margin-left: -4px;
 }
 
 /*
