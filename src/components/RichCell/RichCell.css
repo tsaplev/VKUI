@@ -92,8 +92,8 @@
   text-overflow: ellipsis;
 }
 
-.RichCell__bottom .UsersStack {
-  padding: 5px 0 0;
+.RichCell__bottom {
+  padding-top: 5px;
 }
 
 .RichCell__actions {
@@ -101,7 +101,11 @@
   margin-top: 8px;
 }
 
-.RichCell__actions .Button:not(:last-child) {
+.RichCell__actions:first-child {
+  margin-top: 3px;
+}
+
+.RichCell__actions > *:not(:last-child) {
   margin-right: 8px;
 }
 
@@ -133,9 +137,9 @@
 }
 
 .RichCell--sizeY-compact .RichCell__actions {
-  margin-top: 11px;
+  margin-top: 12px;
 }
 
-.RichCell--sizeY-compact .UsersStack + .RichCell__actions {
-  margin-top: 12px;
+.RichCell--sizeY-compact .RichCell__actions:first-child {
+  margin-top: 6px;
 }

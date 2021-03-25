@@ -5,7 +5,6 @@ Badge 	 TabsItem
 Button 	 Banner
 Button 	 ModalCard
 Button 	 Placeholder
-Button 	 RichCell
 Card 	 CardGrid
 Card 	 CardScroll
 Cell 	 FormItem
@@ -29,4 +28,3 @@ Switch 	 SimpleCell
 Tabs 	 Group
 UsersStack 	 MiniInfoCell
 UsersStack 	 ModalCard
-UsersStack 	 RichCell
