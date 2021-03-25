@@ -36,10 +36,6 @@
   flex-shrink: 0;
 }
 
-.PanelHeader__left .Avatar {
-  margin-left: 8px;
-}
-
 .PanelHeader__content {
   overflow: hidden;
 }
@@ -61,10 +57,6 @@
   justify-content: flex-end;
   box-sizing: border-box;
   color: var(--header_tint);
-}
-
-.PanelHeader__right .Avatar {
-  margin-right: 8px;
 }
 
 .PanelHeader--vkapps .PanelHeader__right {
@@ -148,7 +140,7 @@
 }
 
 .PanelHeader--android .PanelHeader__left:not(:empty) {
-  padding: 4px 0 4px 4px;
+  padding: 4px 0 4px 16px;
 }
 
 .PanelHeader--android .PanelHeader__content {
@@ -193,7 +185,7 @@
 
 .PanelHeader--android .PanelHeader__right:not(:empty),
 .PanelHeader--vkcom .PanelHeader__right:not(:empty) {
-  padding: 4px 4px 4px 0;
+  padding: 4px 16px 4px 0;
 }
 
 /**
@@ -223,7 +215,7 @@
 }
 
 .PanelHeader--vkcom .PanelHeader__left:not(:empty) {
-  padding: 0 0 0 4px;
+  padding: 0 0 0 16px;
 }
 
 .PanelHeader--vkcom .PanelHeader__left,

@@ -4,10 +4,13 @@
   border: none;
   outline: none;
   box-shadow: none;
-  display: block;
+  display: flex;
   color: currentColor;
-  padding: 0;
-  margin: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: content-box;
+  min-width: 24px;
+  padding: 0 12px;
   position: relative;
 }
 
@@ -15,60 +18,47 @@
   opacity: .6;
 }
 
+.PanelHeaderButton.PanelHeaderButton--notPrimitive {
+  width: 24px;
+}
+
+.PanelHeaderButton:first-child {
+  margin-left: -12px;
+}
+
+.PanelHeaderButton:last-child {
+  margin-right: -12px;
+}
+
+.PanelHeaderButton + .PanelHeaderButton {
+  padding-left: 8px;
+  margin-left: -4px;
+}
+
 /*
  * iOS
  */
 
-.PanelHeaderButton--ios {
-  position: relative;
-  display: flex;
-  align-items: center;
+.PanelHeaderButton.PanelHeaderButton--ios {
   font-size: 17px;
   line-height: 44px;
   height: 44px;
-  padding: 0 12px;
-  box-sizing: content-box;
-  min-width: 24px;
-}
-
-.PanelHeaderButton--ios:first-child {
-  margin-left: -12px;
-}
-
-.PanelHeaderButton--ios:last-child {
-  margin-right: -12px;
-}
-
-.PanelHeaderButton--ios + .PanelHeaderButton--ios {
-  padding-left: 8px;
-  margin-left: -4px;
 }
 
 /*
  * Android
  */
 
-.PanelHeaderButton--android {
-  border-radius: 50%;
-}
-
-.PanelHeaderButton--android.PanelHeaderButton--primitive {
+ .PanelHeaderButton.PanelHeaderButton--android {
+  border-radius: 50px;
   height: 48px;
   line-height: 48px;
-  padding: 0 12px;
-}
-
-.PanelHeaderButton--android .Icon--24 {
-  padding: 12px;
-}
-
-.PanelHeaderButton--android .Icon--28 {
-  padding: 10px;
 }
 
 /**
 * VKCOM
 */
+
 .PanelHeaderButton--vkcom {
   color: var(--header_text_secondary);
 }
@@ -83,16 +73,9 @@
   opacity: 1;
 }
 
-.PanelHeaderButton--vkcom {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-}
-
 .PanelHeaderButton--vkcom.PanelHeaderButton--primitive {
   height: 48px;
   line-height: 48px;
-  padding: 0 10px;
 }
 
 .PanelHeaderButton--vkcom.PanelHeaderButton--notPrimitive {
