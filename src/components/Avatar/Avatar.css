@@ -1,5 +1,10 @@
 .Avatar {
   box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.RichCell--vkcom > .Avatar--sz-48 {
+  margin: -2px 0;
 }
 
 .Avatar__in {
