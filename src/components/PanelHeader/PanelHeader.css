@@ -165,11 +165,6 @@
   padding: 0 12px;
 }
 
-.PanelHeader--android .Search,
-.PanelHeader--vkcom .Search {
-  padding: 0 4px;
-}
-
 .PanelHeader--android.PanelHeader--no-left .PanelHeader__content > *,
 .PanelHeader--vkcom.PanelHeader--no-left .PanelHeader__content > * {
   padding-left: 0;

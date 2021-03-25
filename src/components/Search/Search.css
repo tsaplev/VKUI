@@ -344,3 +344,7 @@
 .Group--card .Search--vkcom .Search__input {
   padding-left: 44px;
 }
+
+.PanelHeader .Search {
+  padding: 0;
+}

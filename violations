@@ -23,7 +23,6 @@ Radio 	 FormItem
 Removable 	 FormItem
 Removable 	 FormLayoutGroup
 RichCell 	 FormItem
-Search 	 PanelHeader
 Separator 	 ModalPage
 Separator 	 Tabs
 SimpleCell 	 Cell
