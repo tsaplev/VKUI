@@ -63,6 +63,23 @@
   color: var(--button_tertiary_foreground);
 }
 
+/* Align on text box top */
+.Placeholder__action .Button--lvl-tertiary {
+  margin-top: -8px;
+}
+
+/* Align on text box left / right */
+.Banner__actions > .Button--lvl-tertiary {
+  min-height: auto;
+  padding: 0;
+  border-width: 0;
+}
+
+.Banner__actions > .Button--lvl-tertiary .Button__content {
+  padding-top: 1.5px;
+  padding-bottom: 2.5px;
+}
+
 .Button--lvl-commerce {
   background-color: var(--button_commerce_background);
   color: var(--button_commerce_foreground);

@@ -43,7 +43,3 @@
 .Placeholder__action:not(:first-child) {
   margin-top: 24px;
 }
-
-.Placeholder__action .Button--lvl-tertiary {
-  top: -8px;
-}
