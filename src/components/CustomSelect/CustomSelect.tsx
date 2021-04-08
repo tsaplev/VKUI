@@ -28,7 +28,6 @@ interface CustomSelectState {
   opened?: boolean;
   focused?: boolean;
   focusedOptionIndex: number;
-  selectedOptionIndex: number;
 }
 
 export interface CustomSelectProps extends NativeSelectProps {
@@ -67,7 +66,6 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
       opened: false,
       focused: false,
       focusedOptionIndex: -1,
-      selectedOptionIndex: props.options.findIndex((option) => option.value === value),
       value,
     };
   }
@@ -83,7 +81,7 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
   };
 
   private readonly getSelectedItem = () => {
-    const { selectedOptionIndex } = this.state;
+    const { selectedOptionIndex } = this;
     const { options } = this.props;
 
     if (!options.length) {
@@ -94,11 +92,11 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
   };
 
   open = () => {
-    this.setState(({ selectedOptionIndex }) => ({
+    this.setState({
       opened: true,
-      focusedOptionIndex: selectedOptionIndex,
-    }), () => {
-      const { selectedOptionIndex } = this.state;
+      focusedOptionIndex: this.selectedOptionIndex,
+    }, () => {
+      const { selectedOptionIndex } = this;
 
       if (this.isValidIndex(selectedOptionIndex)) {
         this.scrollToElement(selectedOptionIndex, true);
@@ -135,7 +133,6 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
     const item = options[index];
 
     this.setState({
-      selectedOptionIndex: index,
       value: item.value,
     }, () => {
       const event = new Event('change', { bubbles: true });
@@ -308,19 +305,16 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
     document.removeEventListener('touchend', this.handleDocumentClick, false);
   }
 
-  componentDidUpdate(prevProps: CustomSelectProps) {
-    if (prevProps.options !== this.props.options || prevProps.value !== this.props.value) {
-      this.setState({
-        selectedOptionIndex: this.props.options.findIndex((option) => option.value === this.props.value),
-      });
-    }
+  get selectedOptionIndex() {
+    const value = this.props.value || this.state.value;
+    return this.props.options.findIndex((option) => option.value === value);
   }
 
   renderOption = (option: CustomSelectOptionInterface, index: number) => {
-    const { focusedOptionIndex, selectedOptionIndex } = this.state;
+    const { focusedOptionIndex } = this.state;
     const { renderOption } = this.props;
     const hovered = index === focusedOptionIndex;
-    const selected = index === selectedOptionIndex;
+    const selected = index === this.selectedOptionIndex;
 
     return (
       <React.Fragment key={`${option.value}`}>
@@ -348,7 +342,7 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
   };
 
   render() {
-    const { opened, value } = this.state;
+    const { opened } = this.state;
     const {
       name,
       className,
@@ -366,6 +360,7 @@ class CustomSelect extends React.Component<CustomSelectProps, CustomSelectState>
       children,
       ...restProps
     } = this.props;
+    const value = this.props.value || this.state.value;
     const selected = this.getSelectedItem();
     const label = selected ? selected.label : undefined;
 
