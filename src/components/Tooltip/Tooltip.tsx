@@ -1,27 +1,15 @@
-import React, { ReactElement, ReactNode, Component, Fragment, RefCallback, isValidElement } from 'react';
+import React, { ReactElement, ReactNode, Fragment, isValidElement, FC, useLayoutEffect, useState, useMemo, useRef, useEffect } from 'react';
 import { classNames } from '../../lib/classNames';
 import { getClassName } from '../../helpers/getClassName';
 import ReactDOM from 'react-dom';
-import { canUseDOM, DOMProps, withDOM } from '../../lib/dom';
-import { setRef } from '../../lib/utils';
+import { useDOM } from '../../lib/dom';
 import Subhead from '../Typography/Subhead/Subhead';
 import { tooltipContainerAttr } from './TooltipContainer';
+import { useExternRef } from '../../hooks/useExternRef';
 
 interface TooltipPortalProps extends Partial<TooltipProps> {
   target?: HTMLElement;
 }
-
-interface TooltipPortalState {
-  x: number;
-  y: number;
-}
-
-type GetBoundingTargetRect = () => {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
 
 const isDOMTypeElement = (element: ReactElement): element is React.DOMElement<any, any> => {
   return React.isValidElement(element) && typeof element.type === 'string';
@@ -29,89 +17,71 @@ const isDOMTypeElement = (element: ReactElement): element is React.DOMElement<an
 
 const baseClassName = getClassName('Tooltip');
 
-const TooltipPortal = withDOM<TooltipPortalProps>(
-  class TooltipPortalClass extends Component<TooltipPortalProps & DOMProps, TooltipPortalState> {
-    constructor(props: TooltipPortalProps) {
-      super(props);
+const TooltipPortal: FC<TooltipPortalProps> = ({
+  target,
+  header,
+  text,
+  offsetY,
+  offsetX,
+  alignX,
+  alignY,
+  cornerOffset,
+  mode,
+  onClose,
+}) => {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const { document } = useDOM();
+  /* eslint-disable no-restricted-properties */
+  const fixedPortal = useMemo(() => target.closest(`[${tooltipContainerAttr}=fixed]`) != null, []);
+  const portalTarget = useMemo(() => target.closest(`[${tooltipContainerAttr}]`), []);
+  /* eslint-enable no-restricted-properties */
+  const el = useRef();
 
-      this.state = {
-        x: 0,
-        y: 0,
-      };
+  useEffect(() => {
+    document.addEventListener('click', onClose);
+    return () => document.removeEventListener('click', onClose);
+  }, [onClose]);
 
-      const { target } = props;
-      /* eslint-disable no-restricted-properties */
-      this.fixedPortal = target.closest(`[${tooltipContainerAttr}=fixed]`) != null;
-      this.portalTarget = target.closest(`[${tooltipContainerAttr}]`);
-      /* eslint-enable no-restricted-properties */
-    }
+  const getBoundingTargetRect = () => {
+    const targetBounds = target.getBoundingClientRect();
+    const portalBounds = portalTarget.getBoundingClientRect();
 
-    get document() {
-      return this.props.document;
-    }
-
-    fixedPortal: boolean;
-
-    el: HTMLDivElement;
-
-    portalTarget: HTMLElement;
-
-    getBoundingTargetRect: GetBoundingTargetRect = () => {
-      const { target } = this.props;
-      const targetBounds = target.getBoundingClientRect();
-      const portalBounds = this.portalTarget.getBoundingClientRect();
-
-      return {
-        width: targetBounds.width,
-        height: targetBounds.height,
-        x: targetBounds.left - portalBounds.left,
-        y: targetBounds.top - portalBounds.top,
-      };
+    return {
+      width: targetBounds.width,
+      height: targetBounds.height,
+      x: targetBounds.left - portalBounds.left,
+      y: targetBounds.top - portalBounds.top,
     };
+  };
 
-    componentWillUnmount() {
-      this.document.removeEventListener('click', this.props.onClose);
-    }
+  useLayoutEffect(() => {
+    const coords = getBoundingTargetRect();
+    setPos({
+      x: coords.x + offsetX + (alignX === 'right' ? coords.width - el.current.offsetWidth : 0),
+      y: coords.y + (alignY === 'top' ? -el.current.offsetHeight - offsetY : coords.height + offsetY),
+    });
+  }, []);
 
-    componentDidMount() {
-      const { offsetY, offsetX, alignX, alignY } = this.props;
-      const coords = this.getBoundingTargetRect();
-
-      this.document.addEventListener('click', this.props.onClose);
-
-      this.setState({
-        x: coords.x + offsetX + (alignX === 'right' ? coords.width - this.el.offsetWidth : 0),
-        y: coords.y + (alignY === 'top' ? -this.el.offsetHeight - offsetY : coords.height + offsetY),
-      });
-    }
-
-    getRef: RefCallback<HTMLDivElement> = (el) => this.el = el;
-
-    render() {
-      const { header, text, alignX, alignY, cornerOffset, mode } = this.props;
-
-      return ReactDOM.createPortal(
-        <div vkuiClass={
-          classNames(
-            baseClassName,
-            `Tooltip--x-${alignX}`,
-            `Tooltip--y-${alignY}`,
-            `Tooltip--${mode}`,
-            {
-              'Tooltip--fixed': this.fixedPortal,
-            },
-          )}>
-          <div vkuiClass="Tooltip__container" style={{ top: this.state.y, left: this.state.x }} ref={this.getRef}>
-            <div vkuiClass="Tooltip__corner" style={{ [alignX]: 20 + cornerOffset }} />
-            <div vkuiClass="Tooltip__content">
-              {header && <Subhead weight="semibold" vkuiClass="Tooltip__title">{header}</Subhead>}
-              {text && <Subhead weight="regular" vkuiClass="Tooltip__text">{text}</Subhead>}
-            </div>
-          </div>
-        </div>, this.portalTarget);
-    }
-  },
-);
+  return ReactDOM.createPortal(
+    <div vkuiClass={
+      classNames(
+        baseClassName,
+        `Tooltip--x-${alignX}`,
+        `Tooltip--y-${alignY}`,
+        `Tooltip--${mode}`,
+        {
+          'Tooltip--fixed': fixedPortal,
+        },
+      )}>
+      <div vkuiClass="Tooltip__container" style={{ top: pos.y, left: pos.x }} ref={el}>
+        <div vkuiClass="Tooltip__corner" style={{ [alignX]: 20 + cornerOffset }} />
+        <div vkuiClass="Tooltip__content">
+          {header && <Subhead weight="semibold" vkuiClass="Tooltip__title">{header}</Subhead>}
+          {text && <Subhead weight="regular" vkuiClass="Tooltip__text">{text}</Subhead>}
+        </div>
+      </div>
+    </div>, portalTarget);
+};
 
 export interface TooltipProps {
   /**
@@ -163,54 +133,43 @@ export interface TooltipState {
   ready: boolean;
 }
 
-export default class Tooltip extends Component<TooltipProps, TooltipState> {
-  static defaultProps: Partial<TooltipProps> = {
-    offsetX: 0,
-    offsetY: 15,
-    alignX: 'left',
-    alignY: 'bottom',
-    cornerOffset: 0,
-    isShown: true,
-    mode: 'accent',
-  };
-
-  state: TooltipState = {
-    ready: false,
-  };
-
-  targetEl: HTMLElement;
-
-  componentDidMount() {
-    if (canUseDOM) {
-      this.targetEl && this.setState({ ready: true });
-    }
+function getChildrenRef(node?: ReactNode) {
+  if (!isValidElement(node)) {
+    return null;
   }
-
-  getRef: RefCallback<HTMLDivElement> = (el) => {
-    this.targetEl = el;
-
-    const { children } = this.props;
-    if (isValidElement(children)) {
-      setRef(el, isDOMTypeElement(children) ? children.ref : children.props.getRootRef);
-    }
-  };
-
-  render() {
-    const { children = null, isShown, ...portalProps } = this.props;
-
-    const child = isValidElement(children) ? React.cloneElement(children, {
-      [isDOMTypeElement(children) ? 'ref' : 'getRootRef']: this.getRef,
-    }) : children;
-
-    if (!isShown || !this.state.ready) {
-      return child;
-    }
-
-    return (
-      <Fragment>
-        {child}
-        <TooltipPortal {...portalProps} target={this.targetEl} />
-      </Fragment>
-    );
-  }
+  return isDOMTypeElement(node) ? node.ref : node.props.getRootRef;
 }
+
+const Tooltip: FC<TooltipProps> = ({ children = null, isShown, ...portalProps }) => {
+  const targetRef = useExternRef<HTMLElement>(getChildrenRef(children));
+
+  const [isReady, setReady] = useState(false);
+  useLayoutEffect(() => targetRef.current && setReady(true), []);
+
+  const child = isValidElement(children) ? React.cloneElement(children, {
+    [isDOMTypeElement(children) ? 'ref' : 'getRootRef']: targetRef,
+  }) : children;
+
+  if (!isShown || !isReady) {
+    return child;
+  }
+
+  return (
+    <Fragment>
+      {child}
+      <TooltipPortal {...portalProps} target={targetRef.current} />
+    </Fragment>
+  );
+};
+
+Tooltip.defaultProps = {
+  offsetX: 0,
+  offsetY: 15,
+  alignX: 'left',
+  alignY: 'bottom',
+  cornerOffset: 0,
+  isShown: true,
+  mode: 'accent',
+};
+
+export default Tooltip;
