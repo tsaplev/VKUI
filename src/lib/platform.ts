@@ -1,5 +1,6 @@
 import { BrowserInfo, computeBrowserInfo } from './browser';
 import { querystring } from '@vkontakte/vkjs';
+import { canUseDOM } from './dom';
 
 export enum Platform {
   ANDROID = 'android',
@@ -28,9 +29,9 @@ export type PlatformType = Platform.ANDROID | Platform.IOS | Platform.VKCOM;
 
 export function platform(browserInfo?: BrowserInfo): PlatformType {
   /* Значение, которое передаётся в качестве query-параметра при открытии VK Mini Apps */
-  const vkPlatform = querystring.parse(window.location.search).vk_platform as string | undefined;
+  let vkPlatform = canUseDOM ? querystring.parse(window.location.search).vk_platform : undefined;
 
-  if (vkPlatform) {
+  if (typeof vkPlatform === 'string') {
     return mapVKPlatform(vkPlatform);
   }
 
