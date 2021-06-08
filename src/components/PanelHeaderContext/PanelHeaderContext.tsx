@@ -1,12 +1,13 @@
-import React, { Component, HTMLAttributes, RefObject } from 'react';
+import { FC, HTMLAttributes, useRef, useState } from 'react';
 import FixedLayout from '../FixedLayout/FixedLayout';
 import { classNames } from '../../lib/classNames';
 import { getClassName } from '../../helpers/getClassName';
 import { animationEvent } from '../../lib/supportEvents';
 import { withAdaptivity, AdaptivityProps, ViewWidth } from '../../hoc/withAdaptivity';
-import { DOMProps, withDOM } from '../../lib/dom';
-import { withPlatform } from '../../hoc/withPlatform';
+import { useDOM } from '../../lib/dom';
 import { HasPlatform } from '../../types';
+import { useIsomorphicLayoutEffect } from '../../lib/useIsomorphicLayoutEffect';
+import { noop } from '../../lib/utils';
 
 export interface PanelHeaderContextProps extends HTMLAttributes<HTMLDivElement>, HasPlatform, AdaptivityProps {
   opened: boolean;
@@ -17,96 +18,78 @@ export interface PanelHeaderContextState {
   closing: boolean;
 }
 
-export class PanelHeaderContext extends Component<PanelHeaderContextProps & DOMProps, PanelHeaderContextState> {
-  static defaultProps: Partial<PanelHeaderContextProps> = {
-    opened: false,
-  };
+export const PanelHeaderContext: FC<PanelHeaderContextProps> = ({
+  children,
+  opened,
+  onClose,
+  platform,
+  viewWidth,
+  hasMouse,
+  ...restProps
+}) => {
+  const { document } = useDOM();
+  const [closing, setClosing] = useState(false);
+  const elementRef = useRef<HTMLDivElement>();
+  const animationFinishTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const isDesktop = viewWidth >= ViewWidth.SMALL_TABLET;
 
-  state: PanelHeaderContextState = {
-    closing: false,
-  };
-
-  elementRef: RefObject<HTMLDivElement> = React.createRef();
-
-  private animationFinishTimeout: ReturnType<typeof setTimeout>;
-
-  get isDesktop(): boolean {
-    return this.props.viewWidth >= ViewWidth.SMALL_TABLET;
-  }
-
-  startClosing = (event: Event) => {
-    if (this.elementRef && this.elementRef.current && !this.elementRef.current.contains(event.target as Node)) {
-      this.props.onClose();
-      this.props.document.removeEventListener('click', this.startClosing);
+  useIsomorphicLayoutEffect(() => {
+    if (!opened || !isDesktop) {
+      return noop;
     }
-  };
-
-  componentDidMount() {
-    if (this.props.opened && this.isDesktop) {
-      this.props.document.addEventListener('click', this.startClosing);
-    }
-  }
-
-  componentDidUpdate(prevProps: PanelHeaderContextProps) {
-    if (this.props.opened !== prevProps.opened || this.props.viewWidth !== prevProps.viewWidth) {
-      if (this.props.opened === false && !this.state.closing) {
-        this.setState({ closing: true });
-        this.waitAnimationFinish(this.onAnimationFinish);
+    function onOuterClick(event: Event) {
+      if (elementRef.current && !elementRef.current.contains(event.target as Node)) {
+        onClose();
+        document.removeEventListener('click', onOuterClick);
       }
+    };
+    document.addEventListener('click', onOuterClick);
+    return () => document.removeEventListener('click', onOuterClick);
+  }, [opened, isDesktop]);
 
-      if (this.isDesktop && this.props.opened) {
-        this.props.document.addEventListener('click', this.startClosing);
-      } else {
-        this.props.document.removeEventListener('click', this.startClosing);
-      }
+  useIsomorphicLayoutEffect(() => {
+    if (opened === false && !closing) {
+      setClosing(true);
+      waitAnimationFinish(elementRef.current, () => setClosing(false));
     }
-  }
+  }, [opened]);
 
-  componentWillUnmount() {
-    if (this.isDesktop) {
-      this.props.document.removeEventListener('click', this.startClosing);
+  function waitAnimationFinish(el: HTMLElement, eventHandler: VoidFunction) {
+    if (!el) {
+      return;
     }
-  }
-
-  waitAnimationFinish(eventHandler: VoidFunction) {
-    if (this.elementRef.current) {
-      if (animationEvent.supported) {
-        this.elementRef.current.removeEventListener(animationEvent.name, eventHandler);
-        this.elementRef.current.addEventListener(animationEvent.name, eventHandler);
-      } else {
-        clearTimeout(this.animationFinishTimeout);
-        this.animationFinishTimeout = setTimeout(eventHandler, 200);
-      }
+    if (animationEvent.supported) {
+      elementRef.current.removeEventListener(animationEvent.name, eventHandler);
+      elementRef.current.addEventListener(animationEvent.name, eventHandler);
+    } else {
+      clearTimeout(animationFinishTimeout.current);
+      animationFinishTimeout.current = setTimeout(eventHandler, 200);
     }
-  }
-
-  onAnimationFinish: VoidFunction = () => {
-    this.setState({ closing: false });
   };
 
-  render() {
-    const { children, opened, onClose, platform, viewWidth, hasMouse, window, document, ...restProps } = this.props;
-    const { closing } = this.state;
-    const baseClassNames = getClassName('PanelHeaderContext', platform);
+  const baseClassNames = getClassName('PanelHeaderContext', platform);
 
-    return (
-      <FixedLayout {...restProps} vkuiClass={classNames(baseClassNames, {
-        'PanelHeaderContext--opened': opened,
-        'PanelHeaderContext--closing': closing,
-        'PanelHeaderContext--desktop': this.isDesktop,
-      })} vertical="top">
-        <div vkuiClass="PanelHeaderContext__in" ref={this.elementRef}>
-          <div vkuiClass="PanelHeaderContext__content">
-            {(opened || closing) && children}
-          </div>
+  return (
+    <FixedLayout {...restProps} vkuiClass={classNames(baseClassNames, {
+      'PanelHeaderContext--opened': opened,
+      'PanelHeaderContext--closing': closing,
+      'PanelHeaderContext--desktop': isDesktop,
+    })} vertical="top">
+      <div vkuiClass="PanelHeaderContext__in" ref={elementRef}>
+        <div vkuiClass="PanelHeaderContext__content">
+          {(opened || closing) && children}
         </div>
-        {!this.isDesktop && (opened || closing) && <div onClick={onClose} vkuiClass="PanelHeaderContext__fade" />}
-      </FixedLayout>
-    );
-  }
-}
+      </div>
+      {!isDesktop && (opened || closing) && <div onClick={onClose} vkuiClass="PanelHeaderContext__fade" />}
+    </FixedLayout>
+  );
+};
 
-export default withAdaptivity(withPlatform(withDOM(PanelHeaderContext)), {
+PanelHeaderContext.defaultProps = {
+  opened: false,
+};
+
+export default withAdaptivity(PanelHeaderContext, {
   viewWidth: true,
   hasMouse: true,
 });
