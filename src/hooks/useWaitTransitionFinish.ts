@@ -1,22 +1,22 @@
-import { useRef } from 'react';
+import { useCallback } from 'react';
 import { transitionEvent } from '../lib/supportEvents';
+import { useEventListener } from './useEventListener';
+import { useTimeout } from './useTimeout';
 
-export const useWaitTransitionFinish = () => {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+export const useWaitTransitionFinish = (cb: () => void, durationFallback: number) => {
+  const fallbackTimeout = useTimeout(cb, durationFallback);
+  const transitionObserver = useEventListener(transitionEvent.name, cb);
 
-  const waitTransitionFinish = (element: HTMLElement, eventHandler: VoidFunction, durationFallback: number) => {
-    if (element) {
-      if (transitionEvent.supported) {
-        element.removeEventListener(transitionEvent.name, eventHandler);
-        element.addEventListener(transitionEvent.name, eventHandler);
-      } else {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(eventHandler, durationFallback);
-      }
+  const on = useCallback((el: HTMLElement) => {
+    if (!el) {
+      return;
     }
-  };
+    if (transitionEvent.supported) {
+      transitionObserver.add(el);
+    } else {
+      fallbackTimeout.set();
+    }
+  }, []);
 
-  return {
-    waitTransitionFinish,
-  };
+  return { on };
 };
