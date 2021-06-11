@@ -78,9 +78,8 @@ const AppRoot: FC<AppRootProps> = ({
 
     return () => {
       parent.classList.remove(...classes);
-      if (mode === 'full') {
-        document.documentElement.classList.remove('vkui');
-      }
+      // disabled - removes class when several AppRoots _or_ AppRoot remounts
+      // document.documentElement.classList.remove('vkui');
     };
   }, []);
 

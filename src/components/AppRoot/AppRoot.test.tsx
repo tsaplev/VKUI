@@ -27,10 +27,11 @@ describe('AppRoot', () => {
     });
     describe('applies container classes', () => {
       it('html class="vkui" in full mode', () => {
-        const { unmount } = render(<AppRoot />);
+        const { rerender } = render(<AppRoot key="1" />);
         expect(document.documentElement).toHaveClass('vkui');
-        unmount();
-        expect(document.documentElement).not.toHaveClass('vkui');
+        // preserves class on AppRoot remount
+        rerender(<AppRoot key="2" />);
+        expect(document.documentElement).toHaveClass('vkui');
       });
       it.each(['embedded', 'full'] as const)('container class in %s mode', (mode) => {
         const { unmount, container } = render(<AppRoot mode={mode} />);
