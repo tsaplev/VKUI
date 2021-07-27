@@ -61,7 +61,7 @@ export interface TooltipProps {
    * свойство `getRootRef`, которое должно возвращаться ссылку на корневой DOM-элемент компонента,
    * иначе тултип показан не будет. Если передан React-element, то такой проблемы нет.
    */
-  children: ReactElement;
+  children: ReactNode;
   mode?: 'accent' | 'light';
   /**
    * Если передан `false`, то рисуется просто `children`.
@@ -109,7 +109,8 @@ function mapAlignX(x: TooltipProps['alignX']) {
     case 'right': return 'end';
     default: return '';
   }
-};
+}
+
 function getPlacement(alignX: TooltipProps['alignX'], alignY: TooltipProps['alignY']): Placement {
   return [alignY || 'bottom', mapAlignX(alignX || 'left')].filter((p) => !!p).join('-') as Placement;
 }
@@ -118,7 +119,7 @@ const Tooltip: FC<TooltipProps> = ({
   children, isShown, offsetX = 0, offsetY = 15,
   alignX, alignY, onClose, cornerOffset,
   ...restProps
-}) => {
+}: TooltipProps) => {
   const [tooltipRef, setTooltipRef] = useState<HTMLElement>();
   const [tooltipArrowRef, setTooltipArrowRef] = useState<HTMLElement>();
   const [target, setTarget] = useState<HTMLElement>();
