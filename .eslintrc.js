@@ -1,4 +1,8 @@
-{
+const glob = require('glob');
+const path = require('path');
+const cmp = glob.sync('./src/components/**/*.tsx');
+
+module.exports = {
   "extends": ["@vkontakte/eslint-config/typescript/react"],
   "parserOptions": {
     "project": "./tsconfig.json",
@@ -106,6 +110,17 @@
     {
       "files": ["src/**/*.e2e.{ts,tsx}", "e2e/**/*", "src/testing/**/*"],
       "extends": ["plugin:jest-playwright/recommended"]
-    }
-  ]
+    },
+  ].concat(cmp.map(filePath => {
+    const fileName = path.basename(filePath).split('.')[0];
+    const dirName = path.dirname(filePath).split('/').reverse()[0];
+    return {
+      "files": [filePath],
+      "rules": {
+        "no-restricted-syntax": ["error", {
+          selector: `JSXAttribute[name.name=/vkuiClass/] Literal:not([value=/^(${fileName}|${dirName})(\\b|-|_)/]):not(BinaryExpression[operator=/.==/] *)`
+        }]
+      }
+    };
+  })),
 }
