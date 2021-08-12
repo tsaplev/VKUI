@@ -1,6 +1,6 @@
 import { FC, useCallback, useState } from 'react';
 import { clamp } from '../../helpers/math';
-import { UniversalSlider, UniversalSliderProps } from './UniversalSlider';
+import { UniversalSlider, UniversalSliderProps } from '../Slider/UniversalSlider';
 
 export type Value = [number, number];
 export type RangeSliderProps = UniversalSliderProps<Value>;
