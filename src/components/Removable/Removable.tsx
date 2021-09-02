@@ -1,4 +1,4 @@
-import { AllHTMLAttributes, FC, ReactNode, MouseEvent, useEffect, useRef, useState, Fragment } from 'react';
+import { AllHTMLAttributes, FC, ReactNode, MouseEvent, useRef, useState, Fragment } from 'react';
 import { classNames } from '../../lib/classNames';
 import { getTitleFromChildren } from '../../lib/utils';
 import { usePlatform } from '../../hooks/usePlatform';
@@ -42,17 +42,14 @@ export const Removable: FC<RemovableOwnProps> = ({
   const { document } = useDOM();
 
   const removeButtonRef = useRef(null);
-
-  const [isRemoveActivated, setRemoveActivated] = useState(false);
   const [removeOffset, updateRemoveOffset] = useState(0);
 
-  useGlobalEventListener(document, 'click', isRemoveActivated && (() => {
-    setRemoveActivated(false);
+  useGlobalEventListener(document, 'click', removeOffset > 0 && (() => {
     updateRemoveOffset(0);
   }));
 
   const onRemoveTransitionEnd = () => {
-    if (isRemoveActivated) {
+    if (removeOffset > 0) {
       removeButtonRef?.current?.focus();
     }
   };
@@ -60,7 +57,10 @@ export const Removable: FC<RemovableOwnProps> = ({
   const onRemoveActivateClick = (e: MouseEvent) => {
     e.nativeEvent.stopPropagation();
     e.preventDefault();
-    setRemoveActivated(true);
+
+    if (removeButtonRef?.current) {
+      updateRemoveOffset(removeButtonRef?.current.offsetWidth);
+    }
   };
 
   const onRemoveClick = (e: MouseEvent) => {
@@ -68,14 +68,6 @@ export const Removable: FC<RemovableOwnProps> = ({
     e.preventDefault();
     onRemove && onRemove(e);
   };
-
-  useEffect(() => {
-    const removeButton = removeButtonRef?.current;
-
-    if (isRemoveActivated && removeButton) {
-      updateRemoveOffset(removeButton.offsetWidth);
-    }
-  }, [isRemoveActivated]);
 
   const removePlaceholderString: string = getTitleFromChildren(removePlaceholder);
 
@@ -123,7 +115,7 @@ export const Removable: FC<RemovableOwnProps> = ({
             Component="button"
             hasActive={false}
             hasHover={false}
-            disabled={!isRemoveActivated}
+            disabled={removeOffset > 0}
             getRootRef={removeButtonRef}
             vkuiClass="Removable__remove"
             onClick={onRemoveClick}
