@@ -1,14 +1,14 @@
-import { Component, CSSProperties, HTMLAttributes, MouseEventHandler, RefObject } from 'react';
+import { FC, useMemo, CSSProperties, HTMLAttributes, RefObject } from 'react';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
-import { withPlatform } from '../../hoc/withPlatform';
-import { HasPlatform } from '../../types';
-import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
-import { DOMProps, withDOM } from '../../lib/dom';
+import { useDOM } from '../../lib/dom';
+import { usePlatform } from '../../hooks/usePlatform';
+import { useAdaptivity } from '../../hooks/useAdaptivity';
+import { useGlobalEventListener } from '../../hooks/useGlobalEventListener';
 import { ActionSheetProps } from './ActionSheet';
 import './ActionSheet.css';
 
-interface Props extends HTMLAttributes<HTMLDivElement>, HasPlatform, AdaptivityProps {
+interface Props extends HTMLAttributes<HTMLDivElement> {
   closing: boolean;
   onClose(): void;
   popupDirection?: ActionSheetProps['popupDirection'];
@@ -16,102 +16,59 @@ interface Props extends HTMLAttributes<HTMLDivElement>, HasPlatform, AdaptivityP
   elementRef: RefObject<HTMLDivElement>;
 }
 
-interface State {
-  dropdownStyles: CSSProperties;
-}
+export const ActionSheetDropdownDesktop: FC<Props> = ({
+  children,
+  elementRef,
+  toggleRef,
+  closing,
+  popupDirection,
+  onClose,
+  ...restProps
+}) => {
+  const { window } = useDOM();
+  const platform = usePlatform();
+  const { sizeY } = useAdaptivity();
 
-class ActionSheetDropdownDesktop extends Component<Props & DOMProps, State> {
-  state: State = {
-    dropdownStyles: {
-      left: '0',
-      top: '0',
-      opacity: '0',
-      pointerEvents: 'none',
-    },
-  };
-
-  get window(): Window {
-    return this.props.window;
-  }
-
-  componentDidMount = () => {
-    const { toggleRef, elementRef, popupDirection } = this.props;
+  const dropdownStyles = useMemo<CSSProperties>(() => {
+    if (!toggleRef || !elementRef || !elementRef.current) {
+      return {
+        left: '0',
+        top: '0',
+        opacity: '0',
+        pointerEvents: 'none',
+      };
+    }
 
     const toggleRect = toggleRef.getBoundingClientRect();
     const elementRect = elementRef.current.getBoundingClientRect();
+    const isTop = popupDirection === 'top' || typeof popupDirection === 'function' && popupDirection(elementRef) === 'top';
 
-    let left = toggleRect.left + toggleRect.width - elementRect.width + this.window.pageXOffset;
-    let top: number;
+    return {
+      left: toggleRect.left + toggleRect.width - elementRect.width + window.pageXOffset,
+      top: toggleRect.top + window.pageYOffset + (isTop ? -elementRect.height : toggleRect.height),
+      opacity: 1,
+      pointerEvents: 'auto',
+    };
+  }, [toggleRef, elementRef?.current]);
 
-    if (popupDirection === 'top' || typeof popupDirection === 'function' && popupDirection(elementRef) === 'top') {
-      top = toggleRect.top - elementRect.height + this.window.pageYOffset;
-    } else {
-      top = toggleRect.top + toggleRect.height + this.window.pageYOffset;
+  useGlobalEventListener(window, 'click', (e) => {
+    const dropdownElement = elementRef?.current;
+    if (dropdownElement && !dropdownElement.contains(e.target as Node)) {
+      onClose();
     }
+  });
 
-    this.setState({
-      dropdownStyles: {
-        left,
-        top,
-        opacity: 1,
-        pointerEvents: 'auto',
-      },
-    });
-
-    setTimeout(() => {
-      this.window.addEventListener('click', this.handleClickOutside);
-    });
-  };
-
-  componentWillUnmount = () => {
-    this.window.removeEventListener('click', this.handleClickOutside);
-  };
-
-  handleClickOutside = (e: MouseEvent) => {
-    const dropdownElement = this.props.elementRef.current;
-
-    if (dropdownElement !== e.target && dropdownElement && !dropdownElement.contains(e.target as Node)) {
-      this.onClose();
-    }
-  };
-
-  onClose = () => {
-    this.props.onClose();
-  };
-
-  stopPropagation: MouseEventHandler<HTMLDivElement> = (e) => e.stopPropagation();
-
-  render() {
-    const {
-      children,
-      platform,
-      elementRef,
-      toggleRef,
-      closing,
-      sizeY,
-      window,
-      document,
-      popupDirection,
-      ...restProps
-    } = this.props;
-    const baseClaseName = getClassName('ActionSheet', platform);
-
-    return (
-      <div
-        {...restProps}
-        ref={elementRef}
-        onClick={this.stopPropagation}
-        style={this.state.dropdownStyles}
-        vkuiClass={classNames(baseClaseName, 'ActionSheet--desktop', {
-          'ActionSheet--closing': this.props.closing,
-        }, `ActionSheet--sizeY-${sizeY}`)}
-      >
-        {children}
-      </div>
-    );
-  }
-}
-
-export default withAdaptivity(withPlatform(withDOM<Props>(ActionSheetDropdownDesktop)), {
-  sizeY: true,
-});
+  return (
+    <div
+      {...restProps}
+      ref={elementRef}
+      onClick={(e) => e.stopPropagation()}
+      style={dropdownStyles}
+      vkuiClass={classNames(getClassName('ActionSheet', platform), 'ActionSheet--desktop', {
+        'ActionSheet--closing': closing,
+      }, `ActionSheet--sizeY-${sizeY}`)}
+    >
+      {children}
+    </div>
+  );
+};
