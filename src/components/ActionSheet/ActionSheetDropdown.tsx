@@ -1,11 +1,11 @@
-import React, { FC, MouseEventHandler } from 'react';
+import React, { FC, MouseEventHandler, HTMLAttributes } from 'react';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
 import { usePlatform } from '../../hooks/usePlatform';
 import { ActionSheetProps } from './ActionSheet';
 import './ActionSheet.css';
 
-interface Props {
+interface Props extends HTMLAttributes<HTMLDivElement> {
   closing: boolean;
   onClose(): void;
   toggleRef: Element;
