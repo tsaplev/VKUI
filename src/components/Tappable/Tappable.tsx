@@ -96,7 +96,11 @@ function deactivateOtherInstances(exclude?: string) {
 
 const TappableContext = React.createContext<{ insideTappable?: boolean; onEnter?: VoidFunction; onLeave?: VoidFunction }>({ insideTappable: false });
 
-class Tappable extends React.Component<TappableProps, TappableState> {
+class Tappable extends React.Component<TappableProps & {
+  insideTouchRoot: boolean;
+  onEnter: VoidFunction;
+  onLeave: VoidFunction;
+}, TappableState> {
   constructor(props: TappableProps) {
     super(props);
     this.id = Math.round(Math.random() * 1e8).toString(16);
@@ -113,8 +117,6 @@ class Tappable extends React.Component<TappableProps, TappableState> {
   id: string;
 
   isSlide: boolean;
-
-  insideTouchRoot: boolean;
 
   container: HTMLElement;
 
@@ -159,7 +161,7 @@ class Tappable extends React.Component<TappableProps, TappableState> {
    * Обрабатывает событие touchstart
    */
   onStart: TouchEventHandler = ({ originalEvent }: TouchEvent) => {
-    !this.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
+    !this.props.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
 
     if (this.state.hasActive) {
       if (originalEvent.touches && originalEvent.touches.length > 1) {
@@ -182,7 +184,7 @@ class Tappable extends React.Component<TappableProps, TappableState> {
    * Обрабатывает событие touchmove
    */
   onMove: TouchEventHandler = ({ originalEvent, shiftXAbs, shiftYAbs }: TouchEvent) => {
-    !this.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
+    !this.props.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
     if (shiftXAbs > 20 || shiftYAbs > 20) {
       this.isSlide = true;
       this.stop();
@@ -193,7 +195,7 @@ class Tappable extends React.Component<TappableProps, TappableState> {
    * Обрабатывает событие touchend
    */
   onEnd: TouchEventHandler = ({ originalEvent }: TouchEvent) => {
-    !this.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
+    !this.props.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
     const now = ts();
 
     if (originalEvent.touches && originalEvent.touches.length > 0) {
@@ -265,10 +267,12 @@ class Tappable extends React.Component<TappableProps, TappableState> {
   };
 
   onEnter = () => {
+    this.props.onEnter && this.props.onEnter();
     this.setState({ hovered: true });
   };
 
   onLeave = () => {
+    this.props.onLeave && this.props.onLeave();
     this.setState({ hovered: false });
   };
 
@@ -357,6 +361,9 @@ class Tappable extends React.Component<TappableProps, TappableState> {
       hasActive: propsHasActive,
       activeMode,
       focusVisibleMode,
+      onEnter,
+      onLeave,
+      insideTouchRoot,
       ...restProps
     } = this.props;
 
@@ -382,7 +389,7 @@ class Tappable extends React.Component<TappableProps, TappableState> {
       ? Component
       : Touch;
 
-    let props: RootComponentProps = {};
+    const props: RootComponentProps = {};
     if (!restProps.disabled) {
       props.Component = Component;
       /* eslint-disable */
@@ -391,6 +398,8 @@ class Tappable extends React.Component<TappableProps, TappableState> {
       props.onEnd = this.onEnd;
       props.onClick = onClick;
       props.onKeyDown = isCustomElement ? this.onKeyDown : onKeyDown;
+      props.onEnter = () => this.onEnter();
+      props.onLeave = () => this.onLeave();
       /* eslint-enable */
       props.getRootRef = this.getRef;
     } else {
@@ -404,58 +413,41 @@ class Tappable extends React.Component<TappableProps, TappableState> {
     const role: string = restProps.href ? 'link' : 'button';
 
     return (
-      <TappableContext.Consumer>
-        {({ insideTappable, onEnter, onLeave }) => {
-          return (
-            <TouchRootContext.Consumer>
-              {(insideTouchRoot: boolean) => {
-                this.insideTouchRoot = insideTouchRoot;
-                const touchProps = restProps.disabled ? {} : {
-                  onEnter: () => {
-                    insideTappable && onEnter();
-                    !restProps.disabled && this.onEnter();
-                  },
-                  onLeave: () => {
-                    insideTappable && onLeave();
-                    !restProps.disabled && this.onLeave();
-                  },
-                };
-                return (
-                  <RootComponent
-                    {...touchProps}
-                    type={Component === 'button' ? 'button' : undefined}
-                    tabIndex={isCustomElement && !restProps.disabled ? 0 : undefined}
-                    role={isCustomElement ? role : undefined}
-                    {...restProps}
-                    vkuiClass={classes}
-                    {...props}>
-                    <TappableContext.Provider
-                      value={{
-                        insideTappable: true,
-                        onEnter: () => this.setState({ hasHover: false, hasActive: false }),
-                        onLeave: () => this.setState({ hasHover: propsHasHover, hasActive: propsHasActive }),
-                      }}
-                    >
-                      {children}
-                    </TappableContext.Provider>
-                    {platform === ANDROID && !hasMouse && hasActive && activeMode === 'background' && (
-                      <span aria-hidden="true" vkuiClass="Tappable__waves">
-                        {Object.keys(clicks).map((k: string) => (
-                          <span vkuiClass="Tappable__wave" style={{ top: clicks[k].y, left: clicks[k].x }} key={k} />
-                        ))}
-                      </span>
-                    )}
-                    {hasHover && <span aria-hidden="true" vkuiClass="Tappable__hoverShadow" />}
-                    {!restProps.disabled && <FocusVisible mode={focusVisibleMode} />}
-                  </RootComponent>
-                );
-              }}
-            </TouchRootContext.Consumer>
-          );
-        }}
-      </TappableContext.Consumer>
+      <RootComponent
+        type={Component === 'button' ? 'button' : undefined}
+        tabIndex={isCustomElement && !restProps.disabled ? 0 : undefined}
+        role={isCustomElement ? role : undefined}
+        {...restProps}
+        vkuiClass={classes}
+        {...props}
+      >
+        <TappableContext.Provider
+          value={{
+            insideTappable: true,
+            onEnter: () => this.setState({ hasHover: false, hasActive: false }),
+            onLeave: () => this.setState({ hasHover: propsHasHover, hasActive: propsHasActive }),
+          }}
+        >
+          {children}
+        </TappableContext.Provider>
+        {platform === ANDROID && !hasMouse && hasActive && activeMode === 'background' && (
+          <span aria-hidden="true" vkuiClass="Tappable__waves">
+            {Object.keys(clicks).map((k: string) => (
+              <span vkuiClass="Tappable__wave" style={{ top: clicks[k].y, left: clicks[k].x }} key={k} />
+            ))}
+          </span>
+        )}
+        {hasHover && <span aria-hidden="true" vkuiClass="Tappable__hoverShadow" />}
+        {!restProps.disabled && <FocusVisible mode={focusVisibleMode} />}
+      </RootComponent>
     );
   }
 }
 
-export default withAdaptivity(withPlatform(Tappable), { sizeX: true, hasMouse: true });
+const TappableContexts = (props: TappableProps) => {
+  const insideTouchRoot = React.useContext(TouchRootContext);
+  const { onEnter, onLeave } = React.useContext(TappableContext);
+  return <Tappable {...props} insideTouchRoot={insideTouchRoot} onEnter={onEnter} onLeave={onLeave} />;
+};
+
+export default withAdaptivity(withPlatform(TappableContexts), { sizeX: true, hasMouse: true });
