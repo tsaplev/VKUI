@@ -61,11 +61,7 @@ export interface RootComponentProps extends TouchProps {
   ref?: Ref<HTMLElement>;
 }
 
-export interface StorageItem {
-  activeTimeout: ReturnType<typeof setTimeout>;
-  timeout?: ReturnType<typeof setTimeout>;
-  stop(): void;
-}
+export type StorageItem = () => void;
 
 export interface Storage {
   [index: string]: StorageItem;
@@ -85,10 +81,7 @@ let storage: Storage = {};
  */
 function deactivateOtherInstances(exclude?: string) {
   Object.keys(storage).filter((id: string) => id !== exclude).forEach((id: string) => {
-    clearTimeout(storage[id].activeTimeout);
-    clearTimeout(storage[id].timeout);
-    storage[id].stop();
-
+    storage[id]();
     delete storage[id];
   });
 }
@@ -103,6 +96,7 @@ class Tappable extends React.Component<TappableProps & {
   constructor(props: TappableProps) {
     super(props);
     this.id = Math.round(Math.random() * 1e8).toString(16);
+
     this.state = {
       clicks: {},
       active: false,
@@ -126,9 +120,9 @@ class Tappable extends React.Component<TappableProps & {
 
   container: HTMLElement;
 
-  timeout: ReturnType<typeof setTimeout>;
-
-  wavesTimeout: ReturnType<typeof setTimeout>;
+  stopTimeout: ReturnType<typeof setTimeout>;;
+  activeTimeout: ReturnType<typeof setTimeout>;;
+  wavesTimeout: ReturnType<typeof setTimeout>;;
 
   static defaultProps = {
     stopPropagation: false,
@@ -179,10 +173,9 @@ class Tappable extends React.Component<TappableProps & {
         this.onDown(originalEvent);
       }
 
-      storage[this.id] = {
-        stop: this.stop,
-        activeTimeout: setTimeout(this.start, ACTIVE_DELAY),
-      };
+      this.activeTimeout = setTimeout(this.start, ACTIVE_DELAY);
+
+      storage[this.id] = () => this.stop();
     }
   };
 
@@ -216,25 +209,14 @@ class Tappable extends React.Component<TappableProps & {
         this.stop();
       } else {
         // Короткий тап, оставляем подсветку
-        const timeout = setTimeout(this.stop, this.props.activeEffectDelay - now + this.state.ts);
-        const store = this.getStorage();
-
-        if (store) {
-          store.timeout = timeout;
-        }
+        this.stopTimeout = setTimeout(this.stop, this.props.activeEffectDelay - now + this.state.ts);
       }
     } else if (!this.isSlide) {
       // Очень короткий тап, включаем подсветку
       this.start();
 
-      const timeout = setTimeout(this.stop, this.props.activeEffectDelay);
-
-      if (this.getStorage()) {
-        clearTimeout(this.getStorage().activeTimeout);
-        this.getStorage().timeout = timeout;
-      } else {
-        this.timeout = timeout;
-      }
+      this.stopTimeout = setTimeout(this.stop, this.props.activeEffectDelay);
+      clearTimeout(this.activeTimeout);
     }
 
     this.isSlide = false;
@@ -305,17 +287,9 @@ class Tappable extends React.Component<TappableProps & {
         ts: null,
       });
     }
-    if (this.getStorage()) {
-      clearTimeout(this.getStorage().activeTimeout);
-      delete storage[this.id];
-    }
-  };
-
-  /*
-   * Возвращает хранилище для экземпляра компонента
-   */
-  getStorage: GetStorage = () => {
-    return storage[this.id];
+    clearTimeout(this.activeTimeout);
+    clearTimeout(this.stopTimeout);
+    delete storage[this.id];
   };
 
   /*
@@ -327,13 +301,7 @@ class Tappable extends React.Component<TappableProps & {
   };
 
   componentWillUnmount() {
-    if (storage[this.id]) {
-      clearTimeout(storage[this.id].timeout);
-      clearTimeout(storage[this.id].activeTimeout);
-
-      delete storage[this.id];
-    }
-
+    this.stop();
     clearTimeout(this.wavesTimeout);
   }
 
