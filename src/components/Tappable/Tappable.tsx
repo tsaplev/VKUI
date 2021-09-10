@@ -52,11 +52,6 @@ interface Wave {
   id: string;
 }
 
-export interface TappableState {
-  active?: boolean;
-  ts?: number;
-}
-
 export interface RootComponentProps extends TouchProps {
   ref?: Ref<HTMLElement>;
 }
@@ -116,10 +111,7 @@ const Tappable: React.FC<TappableProps & {
   Component = Component || (restProps.href ? 'a' : 'div') as React.ElementType;
   const id = React.useRef(Math.round(Math.random() * 1e8).toString(16)).current;
   const [clicks, setClicks] = React.useState<Wave[]>([]);
-  const [state, setState] = React.useState<TappableState>({
-    active: false,
-    ts: null,
-  });
+  const [active, setActive] = React.useState(false);
   const [hovered, setHovered] = React.useState(false);
   const [childHover, setChildHover] = React.useState(false);
   const isSlide = React.useRef(false);
@@ -130,6 +122,11 @@ const Tappable: React.FC<TappableProps & {
 
   const activeTimeout = useTimeout(start, ACTIVE_DELAY);
   const stopTimeout = useTimeout(stop, activeEffectDelay);
+
+  const startedAt = React.useRef<number>(null);
+  useIsomorphicLayoutEffect(()=> {
+    startedAt.current = active ? ts() : null;
+  }, [active]);
 
   /*
    * [a11y]
@@ -186,9 +183,9 @@ const Tappable: React.FC<TappableProps & {
       return;
     }
 
-    if (state.active) {
+    if (active) {
       const now = ts();
-      if (now - state.ts >= 100) {
+      if (now - startedAt.current >= 100) {
         // Долгий тап, выключаем подсветку
         stop();
       } else {
@@ -234,11 +231,8 @@ const Tappable: React.FC<TappableProps & {
    * Устанавливает активное выделение
    */
   function start() {
-    if (!state.active && hasActive) {
-      setState({
-        active: true,
-        ts: ts(),
-      });
+    if (hasActive) {
+      setActive(true);
     }
     deactivateOtherInstances(id);
   }
@@ -247,17 +241,12 @@ const Tappable: React.FC<TappableProps & {
    * Снимает активное выделение
    */
   function stop() {
-    // TODO may trigger unnecessary rerender
-    setState({
-      active: false,
-      ts: null,
-    });
+    setActive(false);
     activeTimeout.clear();
     stopTimeout.clear();
     delete storage[id];
   };
 
-  // FIXME depends on state.active
   React.useEffect(() => () => stop(), []);
   // TODO: replace with derived state?
   useIsomorphicLayoutEffect(() => {
@@ -267,8 +256,6 @@ const Tappable: React.FC<TappableProps & {
   function removeWave({ id }: Wave) {
     setClicks(clicks.filter((c) => c.id !== id));
   }
-
-  const { active } = state;
 
   const isCustomElement: boolean = Component !== 'a' && Component !== 'button' && !restProps.contentEditable;
 
