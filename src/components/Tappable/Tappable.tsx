@@ -113,16 +113,53 @@ const Tappable: React.FC<TappableProps> = ({
   const isSlide = React.useRef(false);
   const containerRef = useExternRef(getRootRef);
 
-  const hasActive = _hasActive && !childHover;
-  const hasHover = _hasHover && !childHover;
-
-  const activeTimeout = useTimeout(start, ACTIVE_DELAY);
-  const stopTimeout = useTimeout(stop, activeEffectDelay);
-
   const startedAt = React.useRef<number>(null);
   useIsomorphicLayoutEffect(()=> {
     startedAt.current = active ? ts() : null;
   }, [active]);
+
+  const hasActive = _hasActive && !childHover;
+  const hasHover = _hasHover && !childHover;
+  const isCustomElement: boolean = Component !== 'a' && Component !== 'button' && !restProps.contentEditable;
+  const isPresetHoverMode = ['opacity', 'background'].includes(hoverMode);
+  const isPresetActiveMode = ['opacity', 'background'].includes(activeMode);
+
+  /*
+   * Устанавливает активное выделение
+   */
+  const start = React.useCallback(() => {
+    if (hasActive) {
+      setActive(true);
+    }
+    deactivateOtherInstances(id);
+  }, [hasActive]);
+
+  const activeTimeout = useTimeout(start, ACTIVE_DELAY);
+  const stopTimeout = useTimeout(stop, activeEffectDelay);
+
+  /*
+   * Снимает активное выделение
+   */
+  function stop() {
+    setActive(false);
+    activeTimeout.clear();
+    stopTimeout.clear();
+    delete storage[id];
+  };
+  React.useEffect(() => stop, []);
+
+  /*
+   * Реализует эффект при тапе для Андроида
+   */
+  const onDown = React.useCallback((e: VKUITouchEvent) => {
+    if (platform === ANDROID) {
+      const { top, left } = getOffsetRect(containerRef.current);
+      const x = coordX(e) - left;
+      const y = coordY(e) - top;
+
+      setClicks((clicks) => [...clicks, { x, y, id: Date.now().toString() }]);
+    }
+  }, [platform]);
 
   /*
    * [a11y]
@@ -142,8 +179,12 @@ const Tappable: React.FC<TappableProps> = ({
     }
   }
 
-  function onStart({ originalEvent }: TouchEvent) {
-    !insideTouchRoot && stopPropagation && originalEvent.stopPropagation();
+  const handlePropagation = React.useCallback((e: TouchEvent['originalEvent']) => {
+    !insideTouchRoot && stopPropagation && e.stopPropagation();
+  }, [insideTouchRoot, stopPropagation]);
+
+  const onStart = React.useCallback(({ originalEvent }: TouchEvent) => {
+    handlePropagation(originalEvent);
 
     if (hasActive) {
       if (originalEvent.touches && originalEvent.touches.length > 1) {
@@ -157,21 +198,20 @@ const Tappable: React.FC<TappableProps> = ({
 
       activeTimeout.set();
 
-      // FIXME ref
-      storage[id] = () => stop();
+      storage[id] = stop;
     }
-  }
+  }, [handlePropagation, hasActive]);
 
-  function onMove({ originalEvent, shiftXAbs, shiftYAbs }: TouchEvent) {
-    !insideTouchRoot && stopPropagation && originalEvent.stopPropagation();
+  const onMove = React.useCallback(({ originalEvent, shiftXAbs, shiftYAbs }: TouchEvent) => {
+    handlePropagation(originalEvent);
     if (shiftXAbs > 20 || shiftYAbs > 20) {
       isSlide.current = true;
       stop();
     }
-  };
+  }, [handlePropagation]);
 
-  function onEnd({ originalEvent }: TouchEvent) {
-    !insideTouchRoot && stopPropagation && originalEvent.stopPropagation();
+  const onEnd = React.useCallback(({ originalEvent }: TouchEvent) => {
+    handlePropagation(originalEvent);
 
     if (originalEvent.touches && originalEvent.touches.length > 0) {
       isSlide.current = false;
@@ -198,20 +238,7 @@ const Tappable: React.FC<TappableProps> = ({
     }
 
     isSlide.current = false;
-  };
-
-  /*
-   * Реализует эффект при тапе для Андроида
-   */
-  function onDown(e: VKUITouchEvent) {
-    if (platform === ANDROID) {
-      const { top, left } = getOffsetRect(containerRef.current);
-      const x = coordX(e) - left;
-      const y = coordY(e) - top;
-
-      setClicks([...clicks, { x, y, id: Date.now().toString() }]);
-    }
-  };
+  }, [handlePropagation, active]);
 
   const onEnter = React.useCallback(() => {
     parentHandlers.onEnter && parentHandlers.onEnter();
@@ -223,36 +250,10 @@ const Tappable: React.FC<TappableProps> = ({
     setHovered(false);
   }, [parentHandlers.onEnter]);
 
-  /*
-   * Устанавливает активное выделение
-   */
-  function start() {
-    if (hasActive) {
-      setActive(true);
-    }
-    deactivateOtherInstances(id);
-  }
-
-  /*
-   * Снимает активное выделение
-   */
-  function stop() {
-    setActive(false);
-    activeTimeout.clear();
-    stopTimeout.clear();
-    delete storage[id];
-  };
-
-  React.useEffect(() => () => stop(), []);
   // TODO: replace with derived state?
   useIsomorphicLayoutEffect(() => {
     restProps.disabled && setHovered(false);
   }, [restProps.disabled]);
-
-  const isCustomElement: boolean = Component !== 'a' && Component !== 'button' && !restProps.contentEditable;
-
-  const isPresetHoverMode = ['opacity', 'background'].includes(hoverMode);
-  const isPresetActiveMode = ['opacity', 'background'].includes(activeMode);
 
   const classes = classNames(
     getClassName('Tappable', platform),
