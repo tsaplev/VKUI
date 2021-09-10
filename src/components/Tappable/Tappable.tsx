@@ -81,7 +81,8 @@ function deactivateOtherInstances(exclude?: string) {
   });
 }
 
-const TappableContext = React.createContext<{ insideTappable?: boolean; onEnter?: VoidFunction; onLeave?: VoidFunction }>({ insideTappable: false });
+type TappableContextProps = { insideTappable?: boolean; onEnter?: VoidFunction; onLeave?: VoidFunction };
+const TappableContext = React.createContext<TappableContextProps>({ insideTappable: false });
 
 const Tappable: React.FC<TappableProps & {
   insideTouchRoot: boolean;
@@ -302,6 +303,12 @@ const Tappable: React.FC<TappableProps & {
 
   const role: string = restProps.href ? 'link' : 'button';
 
+  const contextValue = React.useMemo<TappableContextProps>(() => ({
+    insideTappable: true,
+    onEnter: () => setChildHover(true),
+    onLeave: () => setChildHover(false),
+  }), []);
+
   return (
     <RootComponent
       type={Component === 'button' ? 'button' : undefined}
@@ -311,13 +318,7 @@ const Tappable: React.FC<TappableProps & {
       vkuiClass={classes}
       {...props}
     >
-      <TappableContext.Provider
-        value={{
-          insideTappable: true,
-          onEnter: () => setChildHover(true),
-          onLeave: () => setChildHover(false),
-        }}
-      >
+      <TappableContext.Provider value={contextValue}>
         {children}
       </TappableContext.Provider>
       {platform === ANDROID && !hasMouse && hasActive && activeMode === 'background' && (
