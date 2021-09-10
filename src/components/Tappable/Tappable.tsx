@@ -13,6 +13,7 @@ import { setRef } from '../../lib/utils';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 import { shouldTriggerClickOnEnterOrSpace } from '../../lib/accessibility';
 import { FocusVisible, FocusVisibleMode } from '../FocusVisible/FocusVisible';
+import { useTimeout } from '../../hooks/useTimeout';
 import './Tappable.css';
 
 export interface TappableProps extends React.AllHTMLAttributes<HTMLElement>, HasRootRef<HTMLElement>, HasPlatform, AdaptivityProps {
@@ -44,13 +45,14 @@ export interface TappableProps extends React.AllHTMLAttributes<HTMLElement>, Has
   focusVisibleMode?: FocusVisibleMode;
 }
 
+interface Wave {
+  x: number;
+  y: number;
+  id: string;
+}
+
 export interface TappableState {
-  clicks?: {
-    [index: string]: {
-      x: number;
-      y: number;
-    };
-  };
+  clicks?: Wave[];
   hovered?: boolean;
   active?: boolean;
   ts?: number;
@@ -98,7 +100,7 @@ class Tappable extends React.Component<TappableProps & {
     this.id = Math.round(Math.random() * 1e8).toString(16);
 
     this.state = {
-      clicks: {},
+      clicks: [],
       active: false,
       ts: null,
       childHover: false,
@@ -122,7 +124,6 @@ class Tappable extends React.Component<TappableProps & {
 
   stopTimeout: ReturnType<typeof setTimeout>;;
   activeTimeout: ReturnType<typeof setTimeout>;;
-  wavesTimeout: ReturnType<typeof setTimeout>;;
 
   static defaultProps = {
     stopPropagation: false,
@@ -230,27 +231,10 @@ class Tappable extends React.Component<TappableProps & {
       const { top, left } = getOffsetRect(this.container);
       const x = coordX(e) - left;
       const y = coordY(e) - top;
-      const key = 'wave' + Date.now().toString();
 
-      this.setState((state: TappableState): TappableState => {
-        return {
-          clicks: {
-            ...state.clicks,
-            [key]: {
-              x,
-              y,
-            },
-          },
-        };
+      this.setState({
+        clicks: [...this.state.clicks, { x, y, id: Date.now().toString() }],
       });
-
-      this.wavesTimeout = setTimeout(() => {
-        this.setState((state: TappableState): TappableState => {
-          let clicks = { ...state.clicks };
-          delete clicks[key];
-          return { clicks };
-        });
-      }, 225);
     }
   };
 
@@ -302,13 +286,16 @@ class Tappable extends React.Component<TappableProps & {
 
   componentWillUnmount() {
     this.stop();
-    clearTimeout(this.wavesTimeout);
   }
 
   componentDidUpdate(prevProps: TappableProps) {
     if (!prevProps.disabled && this.props.disabled) {
       this.setState({ hovered: false });
     }
+  }
+
+  removeWave({ id }: Wave) {
+    this.setState({ clicks: this.state.clicks.filter((c) => c.id !== id) });
   }
 
   render() {
@@ -404,8 +391,8 @@ class Tappable extends React.Component<TappableProps & {
         </TappableContext.Provider>
         {platform === ANDROID && !hasMouse && hasActive && activeMode === 'background' && (
           <span aria-hidden="true" vkuiClass="Tappable__waves">
-            {Object.keys(clicks).map((k: string) => (
-              <span vkuiClass="Tappable__wave" style={{ top: clicks[k].y, left: clicks[k].x }} key={k} />
+            {clicks.map((wave) => (
+              <Wave {...wave} key={wave.id} onClear={() => this.removeWave(wave)} />
             ))}
           </span>
         )}
@@ -423,3 +410,9 @@ const TappableContexts = (props: TappableProps) => {
 };
 
 export default withAdaptivity(withPlatform(TappableContexts), { sizeX: true, hasMouse: true });
+
+function Wave({ x, y, onClear }: Wave & { onClear: VoidFunction }) {
+  const timeout = useTimeout(onClear, 225);
+  React.useEffect(() => timeout.set(), []);
+  return <span vkuiClass="Tappable__wave" style={{ top: y, left: x }} />;
+}
