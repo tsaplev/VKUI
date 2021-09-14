@@ -58,19 +58,6 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
   const { viewWidth, viewHeight, hasMouse } = useAdaptivity();
   const isDesktop = viewWidth >= ViewWidth.SMALL_TABLET && (hasMouse || viewHeight >= ViewHeight.MEDIUM);
 
-  const fallbackTransitionFinish = useTimeout(afterClose, platform === IOS ? 300 : 200);
-  React.useEffect(() => {
-    if (closing) {
-      if (isDesktop) {
-        afterClose();
-      } else {
-        fallbackTransitionFinish.set();
-      }
-    } else {
-      fallbackTransitionFinish.clear();
-    }
-  }, [closing]);
-
   const onItemClick = React.useCallback<ItemClickHandler>((action, autoclose) => (event) => {
     event.persist();
 
@@ -96,14 +83,10 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
       onClick={!isDesktop ? onClose : null}
       hasMask={!isDesktop}
       fixed={!isDesktop}
+      onClose={isDesktop ? afterClose : null}
     >
       <ActionSheetContext.Provider value={contextValue}>
-        <DropdownComponent
-          closing={closing}
-          onClose={onClose}
-          onTransitionEnd={closing && !isDesktop ? afterClose : null}
-          {...restProps}
-        >
+        <DropdownComponent closing={closing} onClose={onClose} {...restProps}>
           {(hasReactNode(header) || hasReactNode(text)) &&
             <header vkuiClass="ActionSheet__header">
               {hasReactNode(header) &&

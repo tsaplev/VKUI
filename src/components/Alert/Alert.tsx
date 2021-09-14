@@ -33,24 +33,12 @@ export interface AlertProps extends React.HTMLAttributes<HTMLElement>, HasPlatfo
   onClose?: VoidFunction;
 }
 
-export interface AlertState {
-  closing: boolean;
-}
-
 type TransitionEndHandler = (e?: TransitionEvent) => void;
 
 type ItemClickHander = (item: AlertActionInterface) => () => void;
 
-class Alert extends React.Component<AlertProps, AlertState> {
-  constructor(props: AlertProps) {
-    super(props);
-    this.element = React.createRef();
-    this.state = {
-      closing: false,
-    };
-  }
-
-  element: React.RefObject<HTMLDivElement>;
+class Alert extends React.Component<AlertProps> {
+  private element = React.createRef<React.RefObject<HTMLDivElement>>();
 
   private transitionFinishTimeout: ReturnType<typeof setTimeout>;
 
