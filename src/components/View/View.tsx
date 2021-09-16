@@ -180,19 +180,14 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     // Закончилась анимация свайпа назад
     if (prevProps.activePanel !== this.props.activePanel && prevState.swipingBack) {
       const nextPanel = this.props.activePanel;
-      const prevPanel = prevProps.activePanel;
-      delete this.scrolls[prevState.prevPanel];
       this.setState({
         prevPanel: null,
         swipingBack: false,
+        isBack: undefined,
         swipeBackResult: null,
         swipebackStartX: 0,
         swipeBackShift: 0,
         activePanel: nextPanel,
-      }, () => {
-        this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
-        this.props.scroll.scrollTo(0, this.scrolls[this.state.activePanel]);
-        prevProps.onTransition && prevProps.onTransition({ isBack: true, from: prevPanel, to: nextPanel });
       });
     }
 
@@ -204,7 +199,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         detail: {
           from: this.state.prevPanel,
           to: this.state.activePanel,
-          isBack: this.state.isBack || this.state.swipingBack,
+          isBack: this.state.isBack,
           scrolls,
         },
       };
@@ -217,11 +212,11 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       const nextPanelElement = this.pickPanel(this.state.activePanel);
       const prevPanelElement = this.pickPanel(this.state.prevPanel);
       prevPanelElement.scrollTop = scrolls[this.state.prevPanel];
-      if (this.state.isBack || this.state.swipingBack) {
+      if (this.state.isBack) {
         nextPanelElement.scrollTop = scrolls[this.state.activePanel];
       }
-      if (!this.state.swipingBack) {
-        this.waitAnimationFinish(this.pickPanel(this.state.isBack ? this.state.prevPanel : this.state.activePanel), this.transitionEndHandler);
+      if (this.state.animated) {
+        this.waitAnimationFinish(this.state.isBack ? prevPanelElement : nextPanelElement, this.transitionEndHandler);
       }
     }
 
@@ -242,6 +237,20 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         prevPanel: null,
         animated: false,
         activePanel: this.props.activePanel,
+      });
+    }
+
+    if (prevState.prevPanel && !this.state.prevPanel && !this.state.browserSwipe) {
+      if (prevState.isBack) {
+        // may break swipeback cancel
+        delete this.scrolls[prevState.prevPanel];
+        this.props.scroll.scrollTo(0, this.scrolls[this.state.activePanel]);
+      }
+      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
+      this.props.onTransition && this.props.onTransition({
+        isBack: prevState.isBack,
+        from: prevState.prevPanel,
+        to: this.state.activePanel,
       });
     }
   }
@@ -293,21 +302,11 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       'vkui-animation-view-next-forward',
       'vkui-animation-view-prev-back',
     ].includes(e.animationName)) {
-      const activePanel = this.props.activePanel;
-      const isBack = this.state.isBack;
-      const prevPanel = this.state.prevPanel;
-      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
-      if (isBack) {
-        delete this.scrolls[prevPanel];
-      }
       this.setState({
         prevPanel: null,
-        activePanel: activePanel,
+        activePanel: this.props.activePanel,
         animated: false,
         isBack: undefined,
-      }, () => {
-        isBack && this.props.scroll.scrollTo(0, this.scrolls[activePanel]);
-        this.props.onTransition && this.props.onTransition({ isBack, from: prevPanel, to: activePanel });
       });
     }
   };
@@ -334,11 +333,10 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     this.setState({
       prevPanel: null,
       swipingBack: false,
+      isBack: undefined,
       swipeBackResult: null,
       swipebackStartX: 0,
       swipeBackShift: 0,
-    }, () => {
-      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
     });
   }
 
@@ -367,6 +365,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         this.scrolls[this.state.activePanel] = this.props.scroll.getScroll().y;
         this.setState({
           swipingBack: true,
+          isBack: true,
           swipebackStartX: e.startX,
           startT: e.startT,
           prevPanel: this.state.activePanel,
