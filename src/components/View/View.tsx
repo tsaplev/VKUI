@@ -124,7 +124,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     };
   }
 
-  private scrolls: Scrolls = scrollsCache[getNavId(this.props)] || {};
+  private readonly scrolls: Scrolls = scrollsCache[getNavId(this.props)] || {};
 
   static defaultProps: Partial<ViewProps> = {
     history: [],
@@ -168,7 +168,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
       this.blurActiveElement();
 
-      this.scrolls[prevProps.activePanel] = this.props.scroll.getScroll().y;
       this.setState({
         prevPanel: prevProps.activePanel,
         activePanel: this.props.activePanel,
@@ -195,20 +194,20 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
     // Начался переход
     if (!prevState.animated && this.state.animated || !prevState.swipingBack && this.state.swipingBack) {
-      const transitionStartEventData = {
+      this.document.dispatchEvent(new (this.window as any).CustomEvent(transitionStartEventName, {
         detail: {
           from: this.state.prevPanel,
           to: this.state.activePanel,
           isBack: this.state.isBack,
           scrolls,
         },
-      };
-      this.document.dispatchEvent(new (this.window as any).CustomEvent(transitionStartEventName, transitionStartEventData));
+      }));
 
       if (this.state.swipingBack) {
         this.props.onSwipeBackStart && this.props.onSwipeBackStart();
       }
 
+      scrolls[this.state.prevPanel] = this.props.scroll.getScroll().y;
       const nextPanelElement = this.pickPanel(this.state.activePanel);
       const prevPanelElement = this.pickPanel(this.state.prevPanel);
       prevPanelElement.scrollTop = scrolls[this.state.prevPanel];
@@ -225,11 +224,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       this.waitTransitionFinish(this.pickPanel(this.state.activePanel), this.swipingBackTransitionEndHandler);
     }
 
-    // Если свайп назад отменился (когда пользователь недостаточно сильно свайпнул)
-    if (prevState.swipeBackResult === SwipeBackResults.fail && !this.state.swipeBackResult) {
-      this.props.scroll.scrollTo(0, scrolls[this.state.activePanel]);
-    }
-
     // Закончился Safari свайп
     if (prevProps.activePanel !== this.props.activePanel && this.state.browserSwipe) {
       this.setState({
@@ -242,8 +236,9 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
     if (prevState.prevPanel && !this.state.prevPanel && !this.state.browserSwipe) {
       if (prevState.isBack) {
-        // may break swipeback cancel
-        delete this.scrolls[prevState.prevPanel];
+        if (this.state.activePanel !== prevState.prevPanel) {
+          delete this.scrolls[prevState.prevPanel];
+        }
         this.props.scroll.scrollTo(0, this.scrolls[this.state.activePanel]);
       }
       this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
@@ -341,28 +336,22 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
   }
 
   onMoveX = (e: TouchEvent): void => {
+    const { platform, configProvider } = this.props;
     const target = e.originalEvent.target as HTMLElement;
-    if (
-      target &&
-      typeof target.tagName === 'string' &&
-      swipeBackExcludedTags.includes(target.tagName.toLowerCase())
-    ) {
+    if (swipeBackExcludedTags.includes(target?.tagName?.toLowerCase()) || platform !== IOS) {
       return;
     }
 
-    const { platform, configProvider } = this.props;
-
-    if (platform === IOS && !configProvider.isWebView && (e.startX <= 70 || e.startX >= this.window.innerWidth - 70) && !this.state.browserSwipe) {
+    if (!configProvider.isWebView && (e.startX <= 70 || e.startX >= this.window.innerWidth - 70) && !this.state.browserSwipe) {
       this.setState({ browserSwipe: true });
     }
 
-    if (platform === IOS && configProvider.isWebView && this.props.onSwipeBack) {
+    if (configProvider.isWebView && this.props.onSwipeBack) {
       if (this.state.animated && e.startX <= 70) {
         return;
       }
 
       if (e.startX <= 70 && !this.state.swipingBack && this.props.history.length > 1) {
-        this.scrolls[this.state.activePanel] = this.props.scroll.getScroll().y;
         this.setState({
           swipingBack: true,
           isBack: true,
