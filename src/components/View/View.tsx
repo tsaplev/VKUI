@@ -2,7 +2,7 @@ import * as React from 'react';
 import { classNames } from '../../lib/classNames';
 import { transitionEvent, animationEvent } from '../../lib/supportEvents';
 import { getClassName } from '../../helpers/getClassName';
-import { IOS, ANDROID, VKCOM } from '../../lib/platform';
+import { IOS } from '../../lib/platform';
 import Touch, { TouchEvent } from '../Touch/Touch';
 import { HasPlatform } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
@@ -124,8 +124,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     history: [],
   };
 
-  private transitionFinishTimeout: ReturnType<typeof setTimeout>;
-  private animationFinishTimeout: ReturnType<typeof setTimeout>;
+  private fallbackTransition: ReturnType<typeof setTimeout>;
 
   get document() {
     return this.props.document;
@@ -200,14 +199,14 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       if (this.state.animated) {
         if (this.shouldDisableTransitionMotion()) {
           this.transitionEndHandler();
-        } else {
-          this.fallbackAnimationFinish(this.transitionEndHandler);
+        } else if (!animationEvent.supported) {
+          this.fallbackTransitionFinish(this.transitionEndHandler);
         }
       }
     }
 
     // Началась анимация завершения свайпа назад.
-    if (!prevState.swipeBackResult && this.state.swipeBackResult) {
+    if (!prevState.swipeBackResult && this.state.swipeBackResult && !transitionEvent.supported) {
       this.fallbackTransitionFinish(this.swipingBackTransitionEndHandler);
     }
 
@@ -234,17 +233,8 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
   }
 
   fallbackTransitionFinish(eventHandler: VoidFunction): void {
-    if (!transitionEvent.supported) {
-      clearTimeout(this.transitionFinishTimeout);
-      this.transitionFinishTimeout = setTimeout(eventHandler, this.props.platform === ANDROID || this.props.platform === VKCOM ? 300 : 600);
-    }
-  }
-
-  fallbackAnimationFinish(eventHandler: VoidFunction): void {
-    if (!animationEvent.supported) {
-      clearTimeout(this.animationFinishTimeout);
-      this.animationFinishTimeout = setTimeout(eventHandler, this.props.platform === ANDROID || this.props.platform === VKCOM ? 300 : 600);
-    }
+    clearTimeout(this.fallbackTransition);
+    this.fallbackTransition = setTimeout(eventHandler, this.props.platform === IOS ? 600 : 300);
   }
 
   blurActiveElement(): void {
