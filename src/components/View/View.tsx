@@ -345,40 +345,26 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
   };
 
   calcPanelSwipeStyles(panelId: string): React.CSSProperties {
-    if (!canUseDOM) {
-      return {};
+    const { prevPanel, activePanel, swipeBackResult, swipeBackShift } = this.state;
+    const isPrev = panelId === prevPanel;
+    const isNext = panelId === activePanel;
+
+    if (!canUseDOM || !this.state.swipingBack || !isPrev && !isNext) {
+      return null;
     }
 
-    const isPrev = this.state.swipingBack && panelId === this.state.prevPanel;
-    const isNext = this.state.swipingBack && panelId === this.state.activePanel;
+    const prevPanelTranslate = `${swipeBackShift}px`;
+    const nextPanelTranslate = `${-50 + swipeBackShift * 100 / this.window.innerWidth / 2}%`;
+    const prevPanelShadow = 0.3 * (this.window.innerWidth - swipeBackShift) / this.window.innerWidth;
 
-    if (!isPrev && !isNext || this.state.swipeBackResult) {
-      return {};
-    }
-
-    let prevPanelTranslate = `${this.state.swipeBackShift}px`;
-    let nextPanelTranslate = `${-50 + this.state.swipeBackShift * 100 / this.window.innerWidth / 2}%`;
-    let prevPanelShadow = 0.3 * (this.window.innerWidth - this.state.swipeBackShift) / this.window.innerWidth;
-
-    if (this.state.swipeBackResult) {
-      return isPrev ? { boxShadow: `-2px 0 12px rgba(0, 0, 0, ${prevPanelShadow})` } : {};
-    }
-
-    if (isNext) {
-      return {
-        transform: `translate3d(${nextPanelTranslate}, 0, 0)`,
-        WebkitTransform: `translate3d(${nextPanelTranslate}, 0, 0)`,
-      };
-    }
-    if (isPrev) {
-      return {
-        transform: `translate3d(${prevPanelTranslate}, 0, 0)`,
-        WebkitTransform: `translate3d(${prevPanelTranslate}, 0, 0)`,
-        boxShadow: `-2px 0 12px rgba(0, 0, 0, ${prevPanelShadow})`,
-      };
-    }
-
-    return {};
+    const transform = swipeBackResult
+      ? null
+      : `translate3d(${isNext ? nextPanelTranslate : prevPanelTranslate}, 0, 0)`;
+    return {
+      transform,
+      WebkitTransform: transform,
+      boxShadow: isPrev ? `-2px 0 12px rgba(0, 0, 0, ${prevPanelShadow})` : null,
+    };
   }
 
   render() {
