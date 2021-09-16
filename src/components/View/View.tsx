@@ -4,7 +4,6 @@ import { transitionEvent, animationEvent } from '../../lib/supportEvents';
 import { getClassName } from '../../helpers/getClassName';
 import { IOS, ANDROID, VKCOM } from '../../lib/platform';
 import Touch, { TouchEvent } from '../Touch/Touch';
-import { removeObjectKeys } from '../../lib/removeObjectKeys';
 import { HasPlatform } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { withContext } from '../../hoc/withContext';
@@ -90,7 +89,6 @@ export interface ViewProps extends React.HTMLAttributes<HTMLElement>, HasPlatfor
 }
 
 export interface ViewState {
-  scrolls: Scrolls;
   animated: boolean;
   startT?: Date;
 
@@ -112,7 +110,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     super(props);
 
     this.state = {
-      scrolls: scrollsCache[getNavId(props)] || {},
       animated: false,
 
       activePanel: props.activePanel,
@@ -128,6 +125,8 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       browserSwipe: false,
     };
   }
+
+  private scrolls: Scrolls = scrollsCache[getNavId(this.props)] || {};
 
   static defaultProps: Partial<ViewProps> = {
     history: [],
@@ -153,7 +152,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
   componentWillUnmount() {
     const id = getNavId(this.props);
     if (id) {
-      scrollsCache[id] = this.state.scrolls;
+      scrollsCache[id] = this.scrolls;
     }
   }
 
@@ -171,15 +170,12 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
       this.blurActiveElement();
 
+      this.scrolls[prevProps.activePanel] = this.props.scroll.getScroll().y;
       this.setState({
         prevPanel: prevProps.activePanel,
         nextPanel: this.props.activePanel,
         activePanel: null,
         animated: true,
-        scrolls: {
-          ...prevState.scrolls,
-          [prevProps.activePanel]: this.props.scroll.getScroll().y,
-        },
         isBack,
       });
     }
@@ -188,6 +184,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     if (prevProps.activePanel !== this.props.activePanel && prevState.swipingBack) {
       const nextPanel = this.props.activePanel;
       const prevPanel = prevProps.activePanel;
+      delete this.scrolls[prevState.prevPanel];
       this.setState({
         prevPanel: null,
         nextPanel: null,
@@ -196,15 +193,14 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         swipebackStartX: 0,
         swipeBackShift: 0,
         activePanel: nextPanel,
-        scrolls: removeObjectKeys(prevState.scrolls, [prevState.prevPanel]),
       }, () => {
         this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
-        this.props.scroll.scrollTo(0, prevState.scrolls[this.state.activePanel]);
+        this.props.scroll.scrollTo(0, this.scrolls[this.state.activePanel]);
         prevProps.onTransition && prevProps.onTransition({ isBack: true, from: prevPanel, to: nextPanel });
       });
     }
 
-    const scrolls = this.state.scrolls;
+    const scrolls = this.scrolls;
 
     // Начался переход
     if (!prevState.animated && this.state.animated) {
@@ -318,15 +314,17 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       const isBack = this.state.isBack;
       const prevPanel = this.state.prevPanel;
       this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
+      if (isBack) {
+        delete this.scrolls[prevPanel];
+      }
       this.setState({
         prevPanel: null,
         nextPanel: null,
         activePanel: activePanel,
         animated: false,
         isBack: undefined,
-        scrolls: isBack ? removeObjectKeys(this.state.scrolls, [prevPanel]) : this.state.scrolls,
       }, () => {
-        isBack && this.props.scroll.scrollTo(0, this.state.scrolls[activePanel]);
+        isBack && this.props.scroll.scrollTo(0, this.scrolls[activePanel]);
         this.props.onTransition && this.props.onTransition({ isBack, from: prevPanel, to: activePanel });
       });
     }
@@ -385,16 +383,13 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       }
 
       if (e.startX <= 70 && !this.state.swipingBack && this.props.history.length > 1) {
+        this.scrolls[this.state.activePanel] = this.props.scroll.getScroll().y;
         this.setState({
           swipingBack: true,
           swipebackStartX: e.startX,
           startT: e.startT,
           prevPanel: this.state.activePanel,
           nextPanel: this.props.history.slice(-2)[0],
-          scrolls: {
-            ...this.state.scrolls,
-            [this.state.activePanel]: this.props.scroll.getScroll().y,
-          },
         });
       }
       if (this.state.swipingBack) {
