@@ -94,7 +94,6 @@ export interface ViewState {
   animated: boolean;
   startT?: Date;
 
-  visiblePanels: string[];
   activePanel: string;
   isBack: boolean;
   prevPanel: string;
@@ -118,7 +117,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       scrolls: scrollsCache[getNavId(props)] || {},
       animated: false,
 
-      visiblePanels: [props.activePanel],
       activePanel: props.activePanel,
       isBack: undefined,
       prevPanel: null,
@@ -178,7 +176,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       this.blurActiveElement();
 
       this.setState({
-        visiblePanels: [prevProps.activePanel, this.props.activePanel],
         prevPanel: prevProps.activePanel,
         nextPanel: this.props.activePanel,
         activePanel: null,
@@ -203,7 +200,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         swipebackStartX: 0,
         swipeBackShift: 0,
         activePanel: nextPanel,
-        visiblePanels: [nextPanel],
         scrolls: removeObjectKeys(prevState.scrolls, [prevState.swipeBackPrevPanel]),
       }, () => {
         this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
@@ -270,7 +266,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         nextPanel: null,
         prevPanel: null,
         animated: false,
-        visiblePanels: [this.props.activePanel],
         activePanel: this.props.activePanel,
       });
     }
@@ -330,7 +325,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       this.setState({
         prevPanel: null,
         nextPanel: null,
-        visiblePanels: [activePanel],
         activePanel: activePanel,
         animated: false,
         isBack: undefined,
@@ -473,6 +467,16 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     return {};
   }
 
+  get visiblePanels() {
+    if (this.state.animated) {
+      return [this.state.prevPanel, this.state.nextPanel];
+    }
+    if (this.state.swipingBack) {
+      return [this.state.swipeBackPrevPanel, this.state.swipeBackNextPanel];
+    }
+    return [this.state.activePanel];
+  }
+
   render() {
     const {
       popout, modal, platform,
@@ -486,12 +490,8 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     const hasPopout = !!popout;
     const hasModal = !!modal;
 
-    const panels = this.panels.filter((panel: React.ReactElement) => {
-      const panelId = getNavId(panel.props, warn);
-
-      return this.state.visiblePanels.includes(panelId) ||
-        panelId === swipeBackPrevPanel ||
-        panelId === swipeBackNextPanel;
+    const panels = this.panels.filter((panel) => {
+      return this.visiblePanels.includes(getNavId(panel.props, warn));
     });
 
     const disableAnimation = this.shouldDisableTransitionMotion();
