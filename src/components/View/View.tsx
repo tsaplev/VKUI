@@ -155,34 +155,26 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     this.props.modal && !prevProps.modal && this.blurActiveElement();
 
     // Нужен переход
-    if (prevProps.activePanel !== this.props.activePanel && !prevState.swipingBack && !prevState.browserSwipe) {
+    if (prevProps.activePanel !== this.props.activePanel || prevState.swipeBackResult === SwipeBackResults.fail && !this.state.swipeBackResult) {
+      const animated = !prevState.browserSwipe && !prevState.swipingBack;
+
       const firstLayerId = this.panels
         .map((panel) => getNavId(panel.props, warn))
         .find((id) => id === prevProps.activePanel || id === this.props.activePanel);
-
-      const isBack = firstLayerId === this.props.activePanel;
+      const isBack = animated ? firstLayerId === this.props.activePanel : undefined;
 
       this.blurActiveElement();
 
       this.setState({
-        prevPanel: prevProps.activePanel,
         activePanel: this.props.activePanel,
-        animated: true,
-        isBack,
-      });
-    }
-
-    // Закончилась анимация свайпа назад
-    if (prevProps.activePanel !== this.props.activePanel && prevState.swipingBack) {
-      const nextPanel = this.props.activePanel;
-      this.setState({
-        prevPanel: null,
+        prevPanel: animated ? prevProps.activePanel : null,
+        browserSwipe: false,
         swipingBack: false,
-        isBack: undefined,
         swipeBackResult: null,
         swipebackStartX: 0,
         swipeBackShift: 0,
-        activePanel: nextPanel,
+        animated,
+        isBack,
       });
     }
 
@@ -222,16 +214,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     // Началась анимация завершения свайпа назад.
     if (!prevState.swipeBackResult && this.state.swipeBackResult) {
       this.fallbackTransitionFinish(this.swipingBackTransitionEndHandler);
-    }
-
-    // Закончился Safari свайп
-    if (prevProps.activePanel !== this.props.activePanel && this.state.browserSwipe) {
-      this.setState({
-        browserSwipe: false,
-        prevPanel: null,
-        animated: false,
-        activePanel: this.props.activePanel,
-      });
     }
 
     if (prevState.prevPanel && !this.state.prevPanel && !this.state.browserSwipe) {
@@ -314,14 +296,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
   onSwipeBackCancel(): void {
     this.props.onSwipeBackCancel && this.props.onSwipeBackCancel();
-    this.setState({
-      prevPanel: null,
-      swipingBack: false,
-      isBack: undefined,
-      swipeBackResult: null,
-      swipebackStartX: 0,
-      swipeBackShift: 0,
-    });
+    this.setState({ swipeBackResult: null });
   }
 
   onMoveX = (e: TouchEvent): void => {
