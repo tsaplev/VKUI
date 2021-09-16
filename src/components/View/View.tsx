@@ -93,7 +93,6 @@ export interface ViewState {
   prevPanel: string;
 
   swipingBack: boolean;
-  swipebackStartX: number;
   swipeBackShift: number;
   swipeBackResult: SwipeBackResults;
 
@@ -112,7 +111,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       prevPanel: null,
 
       swipingBack: false,
-      swipebackStartX: 0,
       swipeBackShift: 0,
       swipeBackResult: null,
 
@@ -171,7 +169,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         browserSwipe: false,
         swipingBack: false,
         swipeBackResult: null,
-        swipebackStartX: 0,
         swipeBackShift: 0,
         animated,
         isBack,
@@ -313,7 +310,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         this.setState({
           swipingBack: true,
           isBack: true,
-          swipebackStartX: e.startX,
           startT: e.startT,
           prevPanel: this.state.activePanel,
           activePanel: this.props.history.slice(-2)[0],
@@ -323,7 +319,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         let swipeBackShift;
         if (e.shiftX < 0) {
           swipeBackShift = 0;
-        } else if (e.shiftX > this.window.innerWidth - this.state.swipebackStartX) {
+        } else if (e.shiftX > this.window.innerWidth - e.startX) {
           swipeBackShift = this.window.innerWidth;
         } else {
           swipeBackShift = e.shiftX;
@@ -333,14 +329,14 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
     }
   };
 
-  onEnd = (): void => {
+  onEnd = (e: TouchEvent): void => {
     if (this.state.swipingBack) {
       const speed = this.state.swipeBackShift / (Date.now() - this.state.startT.getTime()) * 1000;
       if (this.state.swipeBackShift === 0) {
         this.onSwipeBackCancel();
       } else if (this.state.swipeBackShift >= this.window.innerWidth) {
         this.onSwipeBackSuccess();
-      } else if (speed > 250 || this.state.swipebackStartX + this.state.swipeBackShift > this.window.innerWidth / 2) {
+      } else if (speed > 250 || e.startX + this.state.swipeBackShift > this.window.innerWidth / 2) {
         this.setState({ swipeBackResult: SwipeBackResults.success });
       } else {
         this.setState({ swipeBackResult: SwipeBackResults.fail });
