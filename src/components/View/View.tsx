@@ -86,7 +86,6 @@ export interface ViewProps extends React.HTMLAttributes<HTMLElement>, HasPlatfor
 
 export interface ViewState {
   animated: boolean;
-  startT?: Date;
 
   activePanel: string;
   isBack: boolean;
@@ -300,7 +299,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         this.setState({
           swipingBack: true,
           isBack: true,
-          startT: e.startT,
           prevPanel: this.state.activePanel,
           activePanel: this.props.history.slice(-2)[0],
         });
@@ -321,7 +319,7 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
   onEnd = (e: TouchEvent): void => {
     if (this.state.swipingBack) {
-      const speed = this.state.swipeBackShift / (Date.now() - this.state.startT.getTime()) * 1000;
+      const speed = this.state.swipeBackShift / (Date.now() - e.startT.getTime()) * 1000;
       if (this.state.swipeBackShift === 0) {
         this.onSwipeBackCancel();
       } else if (this.state.swipeBackShift >= this.window.innerWidth) {
