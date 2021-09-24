@@ -92,10 +92,6 @@
     "react/react-in-jsx-scope": "off",
     "no-restricted-syntax": ["error",
       {
-        "selector": "ImportDeclaration[source.value=/^\\W+(index(\\.ts)?)?$/i]",
-        "message": "Do not import index"
-      },
-      {
         "selector": "ImportDeclaration[source.value=/\\.css$/i] ~ ImportDeclaration[source.value!=/\\.css$/i]",
         "message": "CSS import must be last"
       }
