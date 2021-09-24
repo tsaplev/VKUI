@@ -1,5 +1,10 @@
-import { Version } from '../types';
 import { detectIOS } from '@vkontakte/vkjs';
+
+export interface Version {
+  major: number;
+  minor?: number;
+  patch?: number;
+}
 
 export enum System {
   IOS = 'ios',

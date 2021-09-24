@@ -32,8 +32,4 @@ export interface HasInsets {
   insets?: Partial<Insets>;
 }
 
-export interface Version {
-  major: number;
-  minor?: number;
-  patch?: number;
-}
+export type { Version } from './lib/browser';
