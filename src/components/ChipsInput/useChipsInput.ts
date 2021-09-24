@@ -1,7 +1,24 @@
 import * as React from 'react';
-import { ChipsInputOption, ChipsInputProps, ChipsInputValue } from './ChipsInput';
 
-export const useChipsInput = <Option extends ChipsInputOption>(props: Partial<ChipsInputProps<Option>>) => {
+export type ChipsInputValue = string | number;
+
+export interface ChipsInputOption {
+  value?: ChipsInputValue;
+  label?: string;
+  [otherProp: string]: any;
+}
+
+export interface UseChipsInputParams<Option extends ChipsInputOption> {
+  value: Option[];
+  inputValue?: string;
+  onChange?: (o: Option[]) => void;
+  onInputChange?: (e?: React.ChangeEvent<HTMLInputElement>) => void;
+  getOptionValue?: (o?: Option) => ChipsInputValue;
+  getOptionLabel?: (o?: Option) => string;
+  getNewOptionData?: (v?: ChipsInputValue, l?: string) => Option;
+}
+
+export const useChipsInput = <Option extends ChipsInputOption>(props: UseChipsInputParams<Option>) => {
   const { value, getOptionValue, onChange, onInputChange, getNewOptionData } = props;
 
   const [fieldValue, setFieldValue] = React.useState(props.inputValue);
