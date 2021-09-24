@@ -1,9 +1,16 @@
 import * as React from 'react';
-import { ChipsInputOption } from '../ChipsInput/ChipsInput';
-import { useChipsInput } from '../ChipsInput/useChipsInput';
-import { ChipsSelectProps } from './ChipsSelect';
+import { useChipsInput, ChipsInputOption, UseChipsInputParams } from '../ChipsInput/useChipsInput';
 
-export const useChipsSelect = <Option extends ChipsInputOption>(props: Partial<ChipsSelectProps<Option>>) => {
+export interface UseChipsSelectParams<Option extends ChipsInputOption> extends UseChipsInputParams<Option> {
+  options?: Option[];
+  filterFn?: false | ((value?: string, option?: Option, getOptionLabel?: Pick<UseChipsInputParams<ChipsInputOption>, 'getOptionLabel'>['getOptionLabel']) => boolean);
+  /**
+   * Показывать или скрывать уже выбранные опции
+   */
+  showSelected?: boolean;
+}
+
+export const useChipsSelect = <Option extends ChipsInputOption>(props: UseChipsSelectParams<Option>) => {
   const { options, filterFn, getOptionLabel, getOptionValue, showSelected } = props;
 
   const [opened, setOpened] = React.useState(false);

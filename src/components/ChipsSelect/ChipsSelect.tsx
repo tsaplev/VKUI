@@ -5,7 +5,7 @@ import Spinner from '../Spinner/Spinner';
 import CustomScrollView from '../CustomScrollView/CustomScrollView';
 import ChipsInput, { ChipsInputOption, ChipsInputProps, ChipsInputValue, RenderChip, chipsInputDefaultProps } from '../ChipsInput/ChipsInput';
 import CustomSelectOption, { CustomSelectOptionProps } from '../CustomSelectOption/CustomSelectOption';
-import { useChipsSelect } from './useChipsSelect';
+import { useChipsSelect, UseChipsSelectParams } from './useChipsSelect';
 import { withAdaptivity, AdaptivityProps } from '../../hoc/withAdaptivity';
 import { noop } from '../../lib/utils';
 import { useDOM } from '../../lib/dom';
@@ -16,10 +16,11 @@ import { useGlobalEventListener } from '../../hooks/useGlobalEventListener';
 import { defaultFilterFn } from '../../lib/select';
 import './ChipsSelect.css';
 
-export interface ChipsSelectProps<Option extends ChipsInputOption> extends ChipsInputProps<Option>, AdaptivityProps {
+export interface ChipsSelectProps<Option extends ChipsInputOption> extends
+  ChipsInputProps<Option>,
+  UseChipsSelectParams<Option>,
+  AdaptivityProps {
   popupDirection?: 'top' | 'bottom';
-  options?: Option[];
-  filterFn?: false | ((value?: string, option?: Option, getOptionLabel?: Pick<ChipsInputProps<ChipsInputOption>, 'getOptionLabel'>['getOptionLabel']) => boolean);
   /**
    * Возможность создавать чипы которых нет в списке (по enter или с помощью пункта в меню, см creatableText)
    */
@@ -29,10 +30,6 @@ export interface ChipsSelectProps<Option extends ChipsInputOption> extends Chips
    */
   fetching?: boolean;
   renderOption?: (props: CustomSelectOptionProps) => React.ReactNode;
-  /**
-   * Показывать или скрывать уже выбранные опции
-   */
-  showSelected?: boolean;
   /**
    * Текст для пункта создающего чипы при клике, так же отвечает за то будет ли показан этот пункт (показывается после того как в списке не отсанется опций)
    */
