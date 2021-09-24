@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { PlatformType, platform } from './platform';
 import { BrowserInfo, computeBrowserInfo } from './browser';
-import { DOMContext, getDOM } from '../lib/dom';
+import { DOMContext, getDOM } from './dom';
 
 export interface SSRContextInterface {
   platform: PlatformType;

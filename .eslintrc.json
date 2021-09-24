@@ -32,6 +32,7 @@
       "ignoreRestSiblings": true
     }],
     "import/no-cycle": ["error"],
+    "import/no-useless-path-segments": ["error"],
     "no-restricted-globals": ["error", "window", "document"],
     "no-restricted-imports": ["error", {
       "paths": [

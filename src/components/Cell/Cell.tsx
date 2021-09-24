@@ -8,7 +8,7 @@ import SimpleCell, { SimpleCellProps } from '../SimpleCell/SimpleCell';
 import { HasPlatform } from '../../types';
 import { Removable, RemovableProps } from '../Removable/Removable';
 import { usePlatform } from '../../hooks/usePlatform';
-import { ListContext } from '../../components/List/ListContext';
+import { ListContext } from '../List/ListContext';
 import './Cell.css';
 
 export interface CellProps extends SimpleCellProps, HasPlatform, RemovableProps {
