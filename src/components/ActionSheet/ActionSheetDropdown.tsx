@@ -2,7 +2,7 @@ import * as React from 'react';
 import { getClassName } from '../../helpers/getClassName';
 import { classNames } from '../../lib/classNames';
 import { usePlatform } from '../../hooks/usePlatform';
-import { ActionSheetProps } from './ActionSheet';
+import { ActionSheetProps } from './types';
 import './ActionSheet.css';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {

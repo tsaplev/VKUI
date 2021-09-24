@@ -7,7 +7,7 @@ import { useAdaptivity } from '../../hooks/useAdaptivity';
 import { useGlobalEventListener } from '../../hooks/useGlobalEventListener';
 import { warnOnce } from '../../lib/warnOnce';
 import { useIsomorphicLayoutEffect } from '../../lib/useIsomorphicLayoutEffect';
-import { ActionSheetProps } from './ActionSheet';
+import { ActionSheetProps } from './types';
 import './ActionSheet.css';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {

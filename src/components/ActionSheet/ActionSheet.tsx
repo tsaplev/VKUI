@@ -2,6 +2,7 @@ import * as React from 'react';
 import { PopoutWrapper } from '../PopoutWrapper/PopoutWrapper';
 import { ViewWidth, ViewHeight } from '../../hoc/withAdaptivity';
 import { IOS } from '../../lib/platform';
+import { ActionSheetProps } from './types';
 import { ActionSheetDropdownDesktop } from './ActionSheetDropdownDesktop';
 import { ActionSheetDropdown } from './ActionSheetDropdown';
 import { hasReactNode } from '../../lib/utils';
@@ -13,26 +14,7 @@ import { useAdaptivity } from '../../hooks/useAdaptivity';
 import { useObjectMemo } from '../../hooks/useObjectMemo';
 import './ActionSheet.css';
 
-export type PopupDirectionFunction = (elRef: React.RefObject<HTMLDivElement>) => 'top' | 'bottom';
-
-export interface ActionSheetProps extends React.HTMLAttributes<HTMLDivElement> {
-  header?: React.ReactNode;
-  text?: React.ReactNode;
-  onClose?: VoidFunction;
-  /**
-   * Desktop only
-   */
-  toggleRef: Element;
-  /**
-   * Desktop only
-   */
-  popupDirection?: 'top' | 'bottom' | PopupDirectionFunction;
-  /**
-   * iOS only
-   */
-  iosCloseItem: React.ReactNode;
-}
-
+export type { ActionSheetProps };
 export type AnimationEndCallback = (e?: AnimationEvent) => void;
 
 export const ActionSheet: React.FC<ActionSheetProps> = ({
