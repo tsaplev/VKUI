@@ -19,6 +19,7 @@ export interface TouchProps extends React.AllHTMLAttributes<HTMLElement>, HasRoo
   onEndX?(outputEvent: TouchEvent): void;
   onEndY?(outputEvent: TouchEvent): void;
   useCapture?: boolean;
+  slideThreshold?: number;
   noSlideClick?: boolean;
   Component?: React.ElementType;
 }
@@ -60,6 +61,7 @@ export const Touch: React.FC<TouchProps> = ({
   onEndX,
   onEndY,
   onClickCapture,
+  slideThreshold = 5,
   useCapture = false,
   Component = 'div',
   getRootRef,
@@ -116,8 +118,8 @@ export const Touch: React.FC<TouchProps> = ({
 
       // если мы ещё не определились
       if (!isX && !isY) {
-        const willBeX = shiftXAbs >= 5 && shiftXAbs > shiftYAbs;
-        const willBeY = shiftYAbs >= 5 && shiftYAbs > shiftXAbs;
+        const willBeX = shiftXAbs >= slideThreshold && shiftXAbs > shiftYAbs;
+        const willBeY = shiftYAbs >= slideThreshold && shiftYAbs > shiftXAbs;
         const willBeSlidedX = willBeX && (!!onMoveX || !!_onMove);
         const willBeSlidedY = willBeY && (!!onMoveY || !!_onMove);
 
