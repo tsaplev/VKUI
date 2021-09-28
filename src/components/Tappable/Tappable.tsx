@@ -109,12 +109,9 @@ class Tappable extends React.Component<TappableProps, TappableState> {
       hasHover: props.hasHover,
       hasActive: props.hasActive,
     };
-    this.isSlide = false;
   }
 
   id: string;
-
-  isSlide: boolean;
 
   insideTouchRoot: boolean;
 
@@ -181,10 +178,9 @@ class Tappable extends React.Component<TappableProps, TappableState> {
   /*
    * Обрабатывает событие touchmove
    */
-  onMove: TouchEventHandler = ({ originalEvent, shiftXAbs, shiftYAbs }: TouchEvent) => {
+  onMove: TouchEventHandler = ({ originalEvent, isSlide }: TouchEvent) => {
     !this.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
-    if (shiftXAbs > 20 || shiftYAbs > 20) {
-      this.isSlide = true;
+    if (isSlide) {
       this.stop();
     }
   };
@@ -192,12 +188,11 @@ class Tappable extends React.Component<TappableProps, TappableState> {
   /*
    * Обрабатывает событие touchend
    */
-  onEnd: TouchEventHandler = ({ originalEvent }: TouchEvent) => {
+  onEnd: TouchEventHandler = ({ originalEvent, isSlide }: TouchEvent) => {
     !this.insideTouchRoot && this.props.stopPropagation && originalEvent.stopPropagation();
     const now = ts();
 
     if (originalEvent.touches && originalEvent.touches.length > 0) {
-      this.isSlide = false;
       this.stop();
       return;
     }
@@ -215,7 +210,7 @@ class Tappable extends React.Component<TappableProps, TappableState> {
           store.timeout = timeout;
         }
       }
-    } else if (!this.isSlide) {
+    } else if (!isSlide) {
       // Очень короткий тап, включаем подсветку
       this.start();
 
@@ -228,8 +223,6 @@ class Tappable extends React.Component<TappableProps, TappableState> {
         this.timeout = timeout;
       }
     }
-
-    this.isSlide = false;
   };
 
   /*
@@ -376,6 +369,7 @@ class Tappable extends React.Component<TappableProps, TappableState> {
       props.onEnd = this.onEnd;
       props.onClick = onClick;
       props.onKeyDown = isCustomElement ? this.onKeyDown : onKeyDown;
+      props.slideThreshold = 20;
       /* eslint-enable */
       props.getRootRef = this.getRef;
     } else {
