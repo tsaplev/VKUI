@@ -9,18 +9,24 @@ import { HasPlatform } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { withContext } from '../../hoc/withContext';
 import { ConfigProviderContext, ConfigProviderContextInterface } from '../ConfigProvider/ConfigProviderContext';
-import { createCustomEvent } from '../../lib/utils';
 import { SplitColContext, SplitColContextProps } from '../SplitCol/SplitCol';
 import { AppRootPortal } from '../AppRoot/AppRootPortal';
 import { canUseDOM, withDOM, DOMProps } from '../../lib/dom';
 import { ScrollContext, ScrollContextInterface } from '../AppRoot/ScrollContext';
 import { getNavId, NavIdProps } from '../../lib/getNavId';
 import { warnOnce } from '../../lib/warnOnce';
+import { useObjectMemo } from '../../hooks/useObjectMemo';
 import './View.css';
 
 const warn = warnOnce('View');
-export const transitionStartEventName = 'VKUI:View:transition-start';
-export const transitionEndEventName = 'VKUI:View:transition-end';
+
+export const TransitionContext = React.createContext<Transition>({
+  scrolls: {},
+});
+const TransitionContextProvider: React.FC<Transition> = ({ children, ...transition }) => {
+  const stableTransition = useObjectMemo(transition);
+  return <TransitionContext.Provider value={stableTransition}>{children}</TransitionContext.Provider>;
+};
 
 enum SwipeBackResults { fail = 1, success}
 
@@ -28,11 +34,11 @@ interface Scrolls {
   [index: string]: number;
 }
 
-export type TransitionStartEventDetail = {
+export type Transition = {
   scrolls: Scrolls;
-  from: string;
-  to: string;
-  isBack: boolean;
+  from?: string;
+  to?: string;
+  isBack?: boolean;
 };
 
 interface ViewsScrolls {
@@ -205,7 +211,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         visiblePanels: [nextPanel],
         scrolls: removeObjectKeys(prevState.scrolls, [prevState.swipeBackPrevPanel]),
       }, () => {
-        this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
         this.props.scroll.scrollTo(0, prevState.scrolls[this.state.activePanel]);
         prevProps.onTransition && prevProps.onTransition({ isBack: true, from: prevPanel, to: nextPanel });
       });
@@ -215,15 +220,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
     // Начался переход
     if (!prevState.animated && this.state.animated) {
-      const transitionStartEventData = {
-        detail: {
-          from: this.state.prevPanel,
-          to: this.state.nextPanel,
-          isBack: this.state.isBack,
-          scrolls,
-        },
-      };
-      this.document.dispatchEvent(new (this.window as any).CustomEvent(transitionStartEventName, transitionStartEventData));
       const nextPanelElement = this.pickPanel(this.state.nextPanel);
       const prevPanelElement = this.pickPanel(this.state.prevPanel);
 
@@ -236,14 +232,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
 
     // Начался свайп назад
     if (!prevState.swipingBack && this.state.swipingBack) {
-      const transitionStartEventData = {
-        detail: {
-          from: this.state.swipeBackPrevPanel,
-          to: this.state.swipeBackNextPanel,
-          scrolls,
-        },
-      };
-      this.document.dispatchEvent(new (this.window as any).CustomEvent(transitionStartEventName, transitionStartEventData));
       this.props.onSwipeBackStart && this.props.onSwipeBackStart();
       const nextPanelElement = this.pickPanel(this.state.swipeBackNextPanel);
       const prevPanelElement = this.pickPanel(this.state.swipeBackPrevPanel);
@@ -325,7 +313,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       const activePanel = this.props.activePanel;
       const isBack = this.state.isBack;
       const prevPanel = this.state.prevPanel;
-      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
       this.setState({
         prevPanel: null,
         nextPanel: null,
@@ -367,8 +354,6 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
       swipeBackResult: null,
       swipebackStartX: 0,
       swipeBackShift: 0,
-    }, () => {
-      this.document.dispatchEvent(createCustomEvent(this.window, transitionEndEventName));
     });
   }
 
@@ -508,37 +493,44 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
         onMoveX={this.onMoveX}
         onEnd={this.onEnd}
       >
-        <div vkuiClass="View__panels">
-          {panels.map((panel: React.ReactElement) => {
-            const panelId = getNavId(panel.props, warn);
+        <TransitionContextProvider
+          scrolls={this.state.scrolls}
+          isBack={this.state.isBack}
+          from={swipeBackPrevPanel || prevPanel}
+          to={swipeBackNextPanel || nextPanel}
+        >
+          <div vkuiClass="View__panels">
+            {panels.map((panel: React.ReactElement) => {
+              const panelId = getNavId(panel.props, warn);
 
-            return (
-              <div
-                vkuiClass={classNames('View__panel', {
-                  'View__panel--active': panelId === activePanel,
-                  'View__panel--prev': panelId === prevPanel,
-                  'View__panel--next': panelId === nextPanel,
-                  'View__panel--swipe-back-prev': panelId === swipeBackPrevPanel,
-                  'View__panel--swipe-back-next': panelId === swipeBackNextPanel,
-                  'View__panel--swipe-back-success': swipeBackResult === SwipeBackResults.success,
-                  'View__panel--swipe-back-failed': swipeBackResult === SwipeBackResults.fail,
-                })}
-                ref={(el) => this.panelNodes[panelId] = el}
-                data-vkui-active-panel={panelId === activePanel ? 'true' : ''}
-                style={this.calcPanelSwipeStyles(panelId)}
-                key={panelId}
-              >
-                <div vkuiClass="View__panel-in">
-                  {panel}
+              return (
+                <div
+                  vkuiClass={classNames('View__panel', {
+                    'View__panel--active': panelId === activePanel,
+                    'View__panel--prev': panelId === prevPanel,
+                    'View__panel--next': panelId === nextPanel,
+                    'View__panel--swipe-back-prev': panelId === swipeBackPrevPanel,
+                    'View__panel--swipe-back-next': panelId === swipeBackNextPanel,
+                    'View__panel--swipe-back-success': swipeBackResult === SwipeBackResults.success,
+                    'View__panel--swipe-back-failed': swipeBackResult === SwipeBackResults.fail,
+                  })}
+                  ref={(el) => this.panelNodes[panelId] = el}
+                  data-vkui-active-panel={panelId === activePanel ? 'true' : ''}
+                  style={this.calcPanelSwipeStyles(panelId)}
+                  key={panelId}
+                >
+                  <div vkuiClass="View__panel-in">
+                    {panel}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-        <AppRootPortal>
-          {hasPopout && <div vkuiClass="View__popout">{popout}</div>}
-          {hasModal && <div vkuiClass="View__modal">{modal}</div>}
-        </AppRootPortal>
+              );
+            })}
+          </div>
+          <AppRootPortal>
+            {hasPopout && <div vkuiClass="View__popout">{popout}</div>}
+            {hasModal && <div vkuiClass="View__modal">{modal}</div>}
+          </AppRootPortal>
+        </TransitionContextProvider>
       </Touch>
     );
   }
