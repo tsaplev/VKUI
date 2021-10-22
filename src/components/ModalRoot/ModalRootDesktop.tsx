@@ -50,6 +50,9 @@ class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProp
       },
       exitingId: this.props.exitingModal,
       onExit: (id) => this.props.onExit(id),
+      setMaskOpacity: () => undefined,
+      getState: (id) => this.props.modalsState[id],
+      isTouch: false,
     };
   }
 

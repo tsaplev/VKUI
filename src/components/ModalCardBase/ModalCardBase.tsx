@@ -6,7 +6,7 @@ import { classNames } from '../../lib/classNames';
 import { getClassName } from '../../helpers/getClassName';
 import { usePlatform } from '../../hooks/usePlatform';
 import { AdaptivityProps, ViewHeight, ViewWidth, withAdaptivity } from '../../hoc/withAdaptivity';
-import { HasRootRef } from '../../types';
+import { Touch, TouchProps } from '../Touch/Touch';
 import { PanelHeaderButton } from '../PanelHeaderButton/PanelHeaderButton';
 import { IOS } from '../../lib/platform';
 import ModalDismissButton from '../ModalDismissButton/ModalDismissButton';
@@ -14,7 +14,7 @@ import { Icon24Dismiss } from '@vkontakte/icons';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import './ModalCardBase.css';
 
-export interface ModalCardBaseProps extends React.HTMLAttributes<HTMLDivElement>, HasRootRef<HTMLDivElement> {
+export interface ModalCardBaseProps extends TouchProps {
   /**
    * Иконка.
    *
@@ -47,7 +47,6 @@ export interface ModalCardBaseProps extends React.HTMLAttributes<HTMLDivElement>
 }
 
 export const ModalCardBase: React.FC<ModalCardBaseProps> = withAdaptivity(({
-  getRootRef,
   icon,
   header,
   subheader,
@@ -68,12 +67,11 @@ export const ModalCardBase: React.FC<ModalCardBaseProps> = withAdaptivity(({
   const canShowCloseBtnIos = platform === IOS && !canShowCloseBtn;
 
   return (
-    <div
+    <Touch
       {...restProps}
       vkuiClass={classNames(getClassName('ModalCardBase', platform), {
         'ModalCardBase--desktop': isDesktop,
       })}
-      ref={getRootRef}
     >
       <div vkuiClass={classNames('ModalCardBase__container', {
         'ModalCardBase__container--softwareKeyboardOpened': isSoftwareKeyboardOpened,
@@ -99,11 +97,10 @@ export const ModalCardBase: React.FC<ModalCardBaseProps> = withAdaptivity(({
           </PanelHeaderButton>
         }
       </div>
-    </div>
+    </Touch>
   );
 }, {
   viewWidth: true,
   viewHeight: true,
   hasMouse: true,
 });
-

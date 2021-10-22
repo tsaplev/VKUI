@@ -9,7 +9,9 @@ type ModalRefs = { [k in keyof ModalElements]: (e: ModalElements[k]) => void };
 
 export interface ModalRootContextInterface {
   updateModalHeight: VoidFunction;
-  registerModal(data: ModalRegistryEntry): void;
+  registerModal: (data: ModalRegistryEntry) => void;
+  setMaskOpacity: (id: string) => void;
+  getState: (id: string) => ModalsStateEntry;
   onClose?: VoidFunction;
   isInsideModal: boolean;
   exitingId?: string;
@@ -18,16 +20,20 @@ export interface ModalRootContextInterface {
   enteringId?: string;
   animateEnter: (id: string, el: HTMLElement) => void;
   onEnter: (id: string) => void;
+  isTouch: boolean;
 }
 
 export const ModalRootContext = React.createContext<ModalRootContextInterface>({
   updateModalHeight: noop,
   registerModal: noop,
   isInsideModal: false,
+  getState: () => ({}) as any,
   animateExit: noop,
   onExit: noop,
   animateEnter: noop,
   onEnter: noop,
+  setMaskOpacity: noop,
+  isTouch: false,
 });
 
 /**
@@ -42,6 +48,7 @@ export function useModalRegistry(id: string, type: ModalType) {
     enteringId,
     animateEnter,
     onEnter,
+    onClose,
   } = React.useContext(ModalRootContext);
   const elements = React.useRef<ModalElements>({}).current;
   useIsomorphicLayoutEffect(() => {
@@ -81,6 +88,12 @@ export function useModalRegistry(id: string, type: ModalType) {
 
   return {
     refs,
+    onClose,
+    innerElement: {
+      get current() {
+        return elements.innerElement;
+      },
+    },
   };
 }
 

@@ -90,7 +90,10 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
           : 100;
         this.animateTranslate(prevModalState, exitTranslate);
       },
+      getState: (id) => this.modalsState[id],
+      setMaskOpacity: (id) => this.setMaskOpacity(this.modalsState[id]),
       onExit: (id) => this.props.onExit(id),
+      isTouch: true,
     };
   }
 
@@ -217,16 +220,9 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
       return;
     }
     const modalState = this.modalsState[this.props.activeModal];
-    if (!modalState) {
-      return;
-    }
 
-    if (modalState.type === ModalType.PAGE) {
+    if (modalState && modalState.type === ModalType.PAGE) {
       return this.onPageTouchMove(e, modalState);
-    }
-
-    if (modalState.type === ModalType.CARD) {
-      return this.onCardTouchMove(e, modalState);
     }
   };
 
@@ -287,34 +283,11 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
     }
   }
 
-  onCardTouchMove(event: TouchEvent, modalState: ModalsStateEntry) {
-    const { originalEvent, shiftY } = event;
-    const target = originalEvent.target as HTMLElement;
-    if (modalState.innerElement.contains(target)) {
-      if (!this.state.touchDown) {
-        this.setState({ touchDown: true, dragging: true });
-      }
-
-      const shiftYPercent = shiftY / modalState.innerElement.offsetHeight * 100;
-      const shiftYCurrent = rubber(shiftYPercent, 72, 1.2, this.props.platform === ANDROID || this.props.platform === VKCOM);
-
-      modalState.touchShiftYPercent = shiftYPercent;
-      modalState.translateYCurrent = Math.max(0, modalState.translateY + shiftYCurrent);
-
-      this.animateTranslate(modalState, modalState.translateYCurrent);
-      this.setMaskOpacity(modalState);
-    }
-  }
-
   onTouchEnd = (e: TouchEvent) => {
     const modalState = this.modalsState[this.props.activeModal];
 
-    if (modalState.type === ModalType.PAGE) {
+    if (modalState && modalState.type === ModalType.PAGE) {
       return this.onPageTouchEnd(e, modalState);
-    }
-
-    if (modalState.type === ModalType.CARD) {
-      return this.onCardTouchEnd(e, modalState);
     }
   };
 
@@ -359,43 +332,6 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
       modalState.translateYCurrent = translateY;
       modalState.collapsed = translateY > 0 && translateY < shiftYEndPercent;
       modalState.expanded = translateY === 0;
-      modalState.hidden = translateY === 100;
-
-      if (modalState.hidden) {
-        this.props.closeActiveModal();
-      }
-
-      setStateCallback = () => {
-        if (!modalState.hidden) {
-          this.animateTranslate(modalState, modalState.translateY);
-        }
-
-        this.setMaskOpacity(modalState);
-      };
-    }
-
-    this.setState({
-      touchDown: false,
-      dragging: false,
-    }, setStateCallback);
-  }
-
-  onCardTouchEnd({ duration }: TouchEvent, modalState: ModalsStateEntry) {
-    let setStateCallback;
-
-    if (this.state.dragging) {
-      let translateY = modalState.translateYCurrent;
-
-      const expectTranslateY = translateY / duration * 240 * 0.6 * (modalState.touchShiftYPercent < 0 ? -1 : 1);
-      translateY = Math.max(0, translateY + expectTranslateY);
-
-      if (translateY >= 30) {
-        translateY = 100;
-      } else {
-        translateY = 0;
-      }
-
-      modalState.translateY = translateY;
       modalState.hidden = translateY === 100;
 
       if (modalState.hidden) {
