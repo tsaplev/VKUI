@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { classNames } from '../../lib/classNames';
 import { isFunction } from '../../lib/utils';
-import { transitionEvent } from '../../lib/supportEvents';
 import { HasPlatform } from '../../types';
 import { withPlatform } from '../../hoc/withPlatform';
 import { withContext } from '../../hoc/withContext';
@@ -38,22 +37,24 @@ export interface ModalRootProps extends HasPlatform {
 }
 
 class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProps & ModalTransitionProps> {
-  constructor(props: ModalRootProps & ModalTransitionProps) {
-    super(props);
-
-    this.maskElementRef = React.createRef();
-
-    this.modalRootContext = {
+  private getModalRootContext(): ModalRootContextInterface {
+    return {
       updateModalHeight: () => undefined,
       registerModal: ({ id, ...data }) => Object.assign(this.modalsState[id], data),
       onClose: this.triggerActiveModalClose,
       isInsideModal: true,
+      animateEnter: (_id, el) => {
+        el.style.opacity = '1';
+      },
+      enteringId: this.props.enteringModal,
+      onEnter: (id) => this.props.onEnter(id),
+      animateExit: (_id, el) => {
+        el.style.opacity = '0';
+      },
+      exitingId: this.props.exitingModal,
+      onExit: (id) => this.props.onExit(id),
     };
   }
-
-  private readonly maskElementRef: React.RefObject<HTMLDivElement>;
-  private maskAnimationFrame: number;
-  private readonly modalRootContext: ModalRootContextInterface;
 
   get timeout() {
     return this.props.platform === ANDROID || this.props.platform === VKCOM ? 320 : 400;
@@ -65,73 +66,6 @@ class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProp
 
   get modalsState() {
     return this.props.modalsState;
-  }
-
-  componentDidUpdate(prevProps: ModalRootProps & ModalTransitionProps) {
-    // transition phase 2: animate exiting modal
-    if (this.props.exitingModal && this.props.exitingModal !== prevProps.exitingModal) {
-      this.closeModal(this.props.exitingModal);
-    }
-
-    // transition phase 3: animate entering modal
-    if (this.props.enteringModal && this.props.enteringModal !== prevProps.enteringModal) {
-      const { enteringModal } = this.props;
-      const enteringState = this.modalsState[enteringModal];
-      requestAnimationFrame(() => {
-        if (this.props.enteringModal === enteringModal) {
-          this.waitTransitionFinish(enteringState, () => this.props.onEnter(enteringModal));
-          this.animateModalOpacity(enteringState, true);
-        }
-      });
-    }
-  }
-
-  closeModal(id: string) {
-    const prevModalState = this.modalsState[id];
-    if (!prevModalState) {
-      return;
-    }
-
-    this.waitTransitionFinish(prevModalState, () => this.props.onExit(id));
-    this.animateModalOpacity(prevModalState, false);
-    if (!this.props.activeModal) {
-      this.setMaskOpacity(prevModalState, 0);
-    }
-  }
-
-  waitTransitionFinish(modalState: ModalsStateEntry, eventHandler: () => void) {
-    if (transitionEvent.supported) {
-      const onceHandler = () => {
-        modalState.innerElement.removeEventListener(transitionEvent.name, onceHandler);
-        eventHandler();
-      };
-
-      modalState.innerElement.addEventListener(transitionEvent.name, onceHandler);
-    } else {
-      setTimeout(eventHandler, this.timeout);
-    }
-  }
-
-  /* Анимирует сдивг модалки */
-  animateModalOpacity(modalState: ModalsStateEntry, display: boolean) {
-    modalState.innerElement.style.opacity = display ? '1' : '0';
-  }
-
-  /* Устанавливает прозрачность для полупрозрачной подложки */
-  setMaskOpacity(modalState: ModalsStateEntry, forceOpacity: number = null) {
-    if (forceOpacity === null && this.props.history[0] !== modalState.id) {
-      return;
-    }
-
-    cancelAnimationFrame(this.maskAnimationFrame);
-    this.maskAnimationFrame = requestAnimationFrame(() => {
-      if (this.maskElementRef.current) {
-        const { translateY, translateYCurrent } = modalState;
-
-        const opacity = forceOpacity === null ? 1 - (translateYCurrent - translateY) / (100 - translateY) || 0 : forceOpacity;
-        this.maskElementRef.current.style.opacity = Math.max(0, Math.min(100, opacity)).toString();
-      }
-    });
   }
 
   /**
@@ -162,7 +96,7 @@ class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProp
     }
 
     return (
-      <ModalRootContext.Provider value={this.modalRootContext}>
+      <ModalRootContext.Provider value={this.getModalRootContext()}>
         <div
           vkuiClass={classNames(getClassName('ModalRoot', this.props.platform), {
             'ModalRoot--vkapps': this.props.configProvider.webviewType === WebviewType.VKAPPS,
@@ -171,7 +105,7 @@ class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProp
           <div
             vkuiClass="ModalRoot__mask"
             onClick={this.triggerActiveModalClose}
-            ref={this.maskElementRef}
+            style={{ opacity: activeModal ? null : 0 }}
           />
           <div vkuiClass="ModalRoot__viewport">
             {this.modals.map((Modal: React.ReactElement) => {

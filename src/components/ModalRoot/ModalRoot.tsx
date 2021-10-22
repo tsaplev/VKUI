@@ -64,22 +64,41 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
     };
 
     this.maskElementRef = React.createRef();
+    this.frameIds = {};
+  }
 
-    this.modalRootContext = {
+  private getModalRootContext(): ModalRootContextInterface {
+    return {
       updateModalHeight: this.updateModalHeight,
       registerModal: ({ id, ...data }) => Object.assign(this.modalsState[id], data),
       onClose: this.triggerActiveModalClose,
       isInsideModal: true,
-    };
+      enteringId: this.props.enteringModal,
+      animateEnter: (id) => {
+        const enteringState = this.modalsState[id];
+        this.animateTranslate(enteringState, enteringState.translateY);
+      },
+      onEnter: (id) => this.props.onEnter(id),
+      exitingId: this.props.exitingModal,
+      animateExit: (id) => {
+        const prevModalState = this.modalsState[id];
+        const nextModalState = this.modalsState[this.props.activeModal];
+        const nextIsPage = !!nextModalState && nextModalState.type === ModalType.PAGE;
 
-    this.frameIds = {};
+        const prevIsPage = !!prevModalState && prevModalState.type === ModalType.PAGE;
+        const exitTranslate = prevIsPage && nextIsPage && prevModalState.translateY <= nextModalState.translateYFrom && !this.props.isBack
+          ? nextModalState.translateYFrom + 10
+          : 100;
+        this.animateTranslate(prevModalState, exitTranslate);
+      },
+      onExit: (id) => this.props.onExit(id),
+    };
   }
 
   private documentScrolling: boolean;
   private readonly maskElementRef: React.RefObject<HTMLDivElement>;
   private readonly viewportRef = React.createRef<HTMLDivElement>();
   private maskAnimationFrame: number;
-  private readonly modalRootContext: ModalRootContextInterface;
   private readonly frameIds: {
     [index: string]: number;
   };
@@ -113,17 +132,8 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
   }
 
   componentDidUpdate(prevProps: ModalRootProps & ModalTransitionProps) {
-    // transition phase 2: animate exiting modal
-    if (this.props.exitingModal && this.props.exitingModal !== prevProps.exitingModal) {
-      this.closeModal(this.props.exitingModal);
-    }
-
-    // transition phase 3: animate entering modal
-    if (this.props.enteringModal && this.props.enteringModal !== prevProps.enteringModal) {
-      const { enteringModal } = this.props;
-      const enteringState = this.modalsState[enteringModal];
-      this.waitTransitionFinish(enteringState, () => this.props.onEnter(enteringModal));
-      this.animateTranslate(enteringState, enteringState.translateY);
+    if (!this.props.activeModal && prevProps.activeModal) {
+      this.setMaskOpacity(this.modalsState[prevProps.activeModal], 0);
     }
 
     this.toggleDocumentScrolling(!this.props.activeModal && !this.props.exitingModal);
@@ -202,33 +212,6 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
       }
     }
   };
-
-  closeModal(id: string) {
-    // Сбрасываем состояния, которые могут помешать закрытию модального окна
-    this.setState({ touchDown: false });
-
-    const prevModalState = this.modalsState[id];
-
-    if (!prevModalState) {
-      id && warn(`[closeActiveModal] Modal ${id} does not exist - not closing`);
-      return;
-    }
-
-    const nextModalState = this.modalsState[this.props.activeModal];
-    const nextIsPage = !!nextModalState && nextModalState.type === ModalType.PAGE;
-
-    const prevIsPage = !!prevModalState && prevModalState.type === ModalType.PAGE;
-    this.waitTransitionFinish(prevModalState, () => this.props.onExit(id));
-    const exitTranslate = prevIsPage && nextIsPage && prevModalState.translateY <= nextModalState.translateYFrom && !this.props.isBack
-      ? nextModalState.translateYFrom + 10
-      : 100;
-    this.animateTranslate(prevModalState, exitTranslate);
-
-    if (!nextModalState) {
-      // NOTE: was only for clean exit
-      this.setMaskOpacity(prevModalState, 0);
-    }
-  }
 
   onTouchMove = (e: TouchEvent) => {
     if (this.props.exitingModal) {
@@ -536,7 +519,7 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
 
     return (
       <TouchRootContext.Provider value={true}>
-        <ModalRootContext.Provider value={this.modalRootContext}>
+        <ModalRootContext.Provider value={this.getModalRootContext()}>
           <Touch
             vkuiClass={classNames(getClassName('ModalRoot', this.props.platform), {
               'ModalRoot--vkapps': this.props.configProvider.webviewType === WebviewType.VKAPPS,
