@@ -3,7 +3,7 @@ import { ModalsState, ModalsStateEntry, ModalType } from './types';
 import { warnOnce } from '../../lib/warnOnce';
 import { getNavId } from '../../lib/getNavId';
 import { useIsomorphicLayoutEffect } from '../../lib/useIsomorphicLayoutEffect';
-import { noop } from '../../lib/utils';
+import { noop, isFunction } from '../../lib/utils';
 import { useDOM } from '../../lib/dom';
 
 interface ModalTransitionState {
@@ -18,6 +18,7 @@ interface ModalTransitionState {
 export interface ModalTransitionProps extends ModalTransitionState {
   onEnter: (id: string) => void;
   onExit: (id: string) => void;
+  closeActiveModal: VoidFunction;
   modalsState: ModalsState;
 }
 
@@ -80,6 +81,7 @@ function modalTransitionReducer(
 export function useModalManager(
   activeModal: string,
   children: React.ReactChildren,
+  onClose: (id: string) => void,
   initModal: (state: ModalsStateEntry) => void = noop,
 ): ModalTransitionProps {
   const [transitionState, dispatchTransition] = React.useReducer(modalTransitionReducer, {
@@ -126,11 +128,25 @@ export function useModalManager(
   const { enteringModal, exitingModal } = transitionState;
   const canEnter = enteringModal && (!exitingModal || modalsState[enteringModal]?.type === ModalType.PAGE);
 
+  function closeActiveModal() {
+    const modalState = modalsState[transitionState.activeModal];
+    if (modalState) {
+      if (isFunction(modalState.onClose)) {
+        modalState.onClose();
+      } else if (isFunction(onClose)) {
+        onClose(modalState.id);
+      } else if (process.env.NODE_ENV === 'development') {
+        warn('onClose is undefined');
+      }
+    }
+  }
+
   return {
     onEnter: (id: string) => dispatchTransition({ type: 'entered', id }),
     onExit: (id: string) => dispatchTransition({ type: 'exited', id }),
     ...transitionState,
     enteringModal: canEnter ? transitionState.enteringModal : null,
+    closeActiveModal,
     modalsState,
   };
 }
@@ -140,7 +156,11 @@ export function withModalManager(initModal: (a: ModalsStateEntry) => void = noop
     Wrapped: React.ComponentType<Props>,
   ): React.FC<Omit<Props, keyof ModalTransitionProps> & { activeModal: string }> {
     return function WithModalManager(props) {
-      const transitionManager = useModalManager(props.activeModal, props.children as any, initModal);
+      const transitionManager = useModalManager(
+        props.activeModal,
+        props.children as any,
+        (props as any).onClose,
+        initModal);
       return <Wrapped {...props as any} {...transitionManager} />;
     };
   };
