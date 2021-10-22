@@ -4,6 +4,7 @@ import { warnOnce } from '../../lib/warnOnce';
 import { getNavId } from '../../lib/getNavId';
 import { useIsomorphicLayoutEffect } from '../../lib/useIsomorphicLayoutEffect';
 import { noop } from '../../lib/utils';
+import { useDOM } from '../../lib/dom';
 
 interface ModalTransitionState {
   activeModal?: string;
@@ -25,6 +26,17 @@ function getModals(children: React.ReactChildren) {
 }
 
 const warn = warnOnce('ModalRoot');
+
+function useFocusSuspend(suspended: boolean) {
+  const { document } = useDOM();
+  useIsomorphicLayoutEffect(() => {
+    if (suspended) {
+      const restoreFocusTo = document.activeElement as HTMLElement;
+      return () => restoreFocusTo && restoreFocusTo.focus();
+    }
+    return noop;
+  }, [suspended]);
+}
 
 function modalTransitionReducer(
   state: ModalTransitionState,
@@ -108,6 +120,8 @@ export function useModalManager(
       dispatchTransition({ type: 'inited', id: transitionState.activeModal });
     }
   }, [transitionState.activeModal]);
+
+  useFocusSuspend(Boolean(activeModal || transitionState.exitingModal));
 
   const { enteringModal, exitingModal } = transitionState;
   const canEnter = enteringModal && (!exitingModal || modalsState[enteringModal]?.type === ModalType.PAGE);

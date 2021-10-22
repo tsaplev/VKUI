@@ -83,14 +83,9 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
   private readonly frameIds: {
     [index: string]: number;
   };
-  private restoreFocusTo: HTMLElement;
 
   get timeout(): number {
     return this.props.platform === ANDROID || this.props.platform === VKCOM ? 320 : 400;
-  }
-
-  get document(): Document {
-    return this.props.document;
   }
 
   get window(): Window {
@@ -129,15 +124,6 @@ class ModalRootTouchComponent extends React.Component<ModalRootProps & DOMProps 
       const enteringState = this.modalsState[enteringModal];
       this.waitTransitionFinish(enteringState, () => this.props.onEnter(enteringModal));
       this.animateTranslate(enteringState, enteringState.translateY);
-    }
-
-    // focus restoration
-    if (this.props.activeModal && !prevProps.activeModal) {
-      this.restoreFocusTo = this.document.activeElement as HTMLElement;
-    }
-    if (!this.props.activeModal && !this.props.exitingModal && this.restoreFocusTo) {
-      this.restoreFocusTo.focus();
-      this.restoreFocusTo = null;
     }
 
     this.toggleDocumentScrolling(!this.props.activeModal && !this.props.exitingModal);

@@ -54,7 +54,6 @@ class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProp
   private readonly maskElementRef: React.RefObject<HTMLDivElement>;
   private maskAnimationFrame: number;
   private readonly modalRootContext: ModalRootContextInterface;
-  private restoreFocusTo: HTMLElement;
 
   get timeout() {
     return this.props.platform === ANDROID || this.props.platform === VKCOM ? 320 : 400;
@@ -84,15 +83,6 @@ class ModalRootDesktopComponent extends React.Component<ModalRootProps & DOMProp
           this.animateModalOpacity(enteringState, true);
         }
       });
-    }
-
-    // focus restoration
-    if (this.props.activeModal && !prevProps.activeModal) {
-      this.restoreFocusTo = this.props.document.activeElement as HTMLElement;
-    }
-    if (!this.props.activeModal && !this.props.exitingModal && this.restoreFocusTo) {
-      this.restoreFocusTo.focus();
-      this.restoreFocusTo = null;
     }
   }
 
