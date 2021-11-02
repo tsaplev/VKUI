@@ -2,7 +2,7 @@
   position: relative;
 }
 
-.Tappable:not([disabled]):not([aria-disabled="true"]) {
+.Tappable:not(.Tappable--disabled) {
   cursor: pointer;
 }
 

@@ -128,6 +128,7 @@ const Tappable: React.FC<TappableProps> = ({
   getRootRef,
   sizeX,
   hasMouse,
+  disabled,
   hasHover: _hasHover = deviceHasHover,
   hoverMode = 'background',
   hasActive: _hasActive = true,
@@ -145,8 +146,8 @@ const Tappable: React.FC<TappableProps> = ({
   const [childHover, setChildHover] = React.useState(false);
   const [_hovered, setHovered] = React.useState(false);
 
-  const hovered = _hovered && !props.disabled;
-  const hasActive = _hasActive && !childHover && !props.disabled;
+  const hovered = _hovered && !disabled;
+  const hasActive = _hasActive && !childHover && !disabled;
   const hasHover = _hasHover && !childHover;
   const isCustomElement = Component !== 'a' && Component !== 'button' && !props.contentEditable;
   const isPresetHoverMode = ['opacity', 'background'].includes(hoverMode);
@@ -227,6 +228,7 @@ const Tappable: React.FC<TappableProps> = ({
     getClassName('Tappable', platform),
     `Tappable--sizeX-${sizeX}`,
     {
+      'Tappable--disabled': disabled,
       'Tappable--active': hasActive && active,
       'Tappable--mouse': hasMouse,
       [`Tappable--hover-${hoverMode}`]: hasHover && hovered && isPresetHoverMode,
@@ -236,24 +238,31 @@ const Tappable: React.FC<TappableProps> = ({
     });
 
   const handlers: RootComponentProps = { onStart, onMove, onEnd, onClick, onKeyDown };
-  const role = props.href ? 'link' : 'button';
+
+  let role = undefined;
+  let tabIndex = undefined;
+  if (isCustomElement && !disabled) {
+    role = props.href ? 'link' : 'button';
+    tabIndex = 0;
+  }
 
   return (
     <Touch
       onEnter={() => setHovered(true)}
       onLeave={() => setHovered(false)}
       type={Component === 'button' ? 'button' : undefined}
-      tabIndex={isCustomElement && !props.disabled ? 0 : undefined}
-      role={isCustomElement ? role : undefined}
-      aria-disabled={isCustomElement ? props.disabled : null}
-      stopPropagation={stopPropagation && !insideTouchRoot && !props.disabled}
+      tabIndex={tabIndex}
+      role={role}
+      stopPropagation={stopPropagation && !insideTouchRoot && !disabled}
       {...props}
       slideThreshold={20}
       usePointerHover
       vkuiClass={classes}
       Component={Component}
       getRootRef={containerRef}
-      {...(props.disabled ? {} : handlers)}>
+      disabled={Component === 'button' ? disabled : undefined}
+      aria-disabled={!!role ? disabled : undefined}
+      {...(disabled ? {} : handlers)}>
       <TappableContext.Provider value={childContext}>
         {children}
       </TappableContext.Provider>
@@ -265,7 +274,7 @@ const Tappable: React.FC<TappableProps> = ({
         </span>
       )}
       {hasHover && hoverMode === 'background' && <span aria-hidden="true" vkuiClass="Tappable__hoverShadow" />}
-      {!props.disabled && <FocusVisible mode={focusVisibleMode} />}
+      {!disabled && <FocusVisible mode={focusVisibleMode} />}
     </Touch>
   );
 };
