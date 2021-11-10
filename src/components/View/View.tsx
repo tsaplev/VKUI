@@ -18,8 +18,6 @@ import { warnOnce } from '../../lib/warnOnce';
 import { swipeBackExcluded } from './utils';
 import './View.css';
 
-const warn = warnOnce('View');
-
 enum SwipeBackResults { fail = 1, success}
 
 interface Scrolls {
@@ -95,6 +93,7 @@ export interface ViewState {
   browserSwipe: boolean;
 }
 
+const warn = warnOnce('View');
 class View extends React.Component<ViewProps & DOMProps, ViewState> {
   constructor(props: ViewProps) {
     super(props);
@@ -140,6 +139,14 @@ class View extends React.Component<ViewProps & DOMProps, ViewState> {
   }
 
   panelNodes: { [id: string]: HTMLDivElement } = {};
+
+  componentDidMount() {
+    if (process.env.NODE_ENV === 'development') {
+      const { popout, modal } = this.props;
+      popout && warn('Свойство popout устарело и будет удалено в 5.0.0. Используйте одноименное свойство у SplitLayout.');
+      modal && warn('Свойство modal устарело и будет удалено в 5.0.0. Используйте одноименное свойство у SplitLayout.');
+    }
+  }
 
   componentWillUnmount() {
     const id = getNavId(this.props);
