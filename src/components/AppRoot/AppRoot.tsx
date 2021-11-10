@@ -55,7 +55,10 @@ export const AppRoot: React.FC<AppRootProps> = withAdaptivity(({
       warn('Scroll modes only supported in embedded mode');
     }
     if (_mode && _embedded) {
-      warn(`mode="${mode}" overrides embedded`);
+      warn(`Свойство mode="${mode}" переопределяет свойство embedded`);
+    }
+    if (_embedded) {
+      warn('Свойство embedded устарело и будет удалено в 5.0.0. Используйте mode="embedded".');
     }
   }
 
