@@ -15,8 +15,6 @@ import { useTimeout } from '../../hooks/useTimeout';
 import { usePlatform } from '../../hooks/usePlatform';
 import './Root.css';
 
-const warn = warnOnce('Root');
-
 export interface RootProps extends React.HTMLAttributes<HTMLDivElement>, NavIdProps {
   activeView: string;
   onTransition?(params: { isBack: boolean; from: string; to: string }): void;
@@ -41,6 +39,7 @@ export interface RootState {
   prevView?: string;
 }
 
+const warn = warnOnce('Root');
 const Root: React.FC<RootProps> = ({
   popout = null, modal, children,
   activeView: _activeView, onTransition,
@@ -106,6 +105,11 @@ const Root: React.FC<RootProps> = ({
       finishTransition();
     }
   };
+
+  if (process.env.NODE_ENV === 'development') {
+    popout && warn('Свойство popout устарело и будет удалено в 5.0.0. Используйте одноименное свойство у SplitLayout.');
+    modal && warn('Свойство modal устарело и будет удалено в 5.0.0. Используйте одноименное свойство у SplitLayout.');
+  }
 
   return (
     <div {...restProps} vkuiClass={classNames(getClassName('Root', platform), {
