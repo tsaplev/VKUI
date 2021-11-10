@@ -7,6 +7,7 @@ import Tappable from '../Tappable/Tappable';
 import { getClassName } from '../../helpers/getClassName';
 import { usePlatform } from '../../hooks/usePlatform';
 import { hasReactNode } from '../../lib/utils';
+import { warnOnce } from '../../lib/warnOnce';
 import { HasRef, HasRootRef } from '../../types';
 import './ContentCard.css';
 
@@ -53,6 +54,7 @@ export interface ContentCardProps extends HasRootRef<HTMLDivElement>, React.ImgH
   mode?: CardProps['mode'];
 }
 
+const warn = warnOnce('ContentCard');
 const ContentCard: React.FC<ContentCardProps> = (props: ContentCardProps) => {
   const {
     subtitle,
@@ -86,6 +88,10 @@ const ContentCard: React.FC<ContentCardProps> = (props: ContentCardProps) => {
   const disabled = restProps.disabled || typeof restProps.onClick !== 'function';
 
   const source = image || src;
+
+  if (image && process.env.NODE_ENV === 'development') {
+    warn('Свойство image устарело и будет удалено в v5.0.0. Используйте src');
+  }
 
   return (
     <Card mode={mode} getRootRef={getRootRef} vkuiClass={getClassName('ContentCard', platform)} style={style} className={className}>
