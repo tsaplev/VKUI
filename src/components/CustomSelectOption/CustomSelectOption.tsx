@@ -37,7 +37,7 @@ const CustomSelectOption: React.FC<CustomSelectOptionProps> = ({
   const { sizeY } = useAdaptivity();
 
   if (!!option && process.env.NODE_ENV === 'development') {
-    warn('Свойство option было добавлено по ошибке будет и удалено в 5.0.0');
+    warn('Свойство option было добавлено по ошибке и будет удалено в v5.0.0.');
   }
 
   return (
