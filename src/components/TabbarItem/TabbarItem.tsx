@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { warnOnce } from '../../lib/warnOnce';
 import { getClassName } from '../../helpers/getClassName';
 import Counter from '../Counter/Counter';
 import { classNames } from '../../lib/classNames';
@@ -22,10 +23,15 @@ export interface TabbarItemProps extends React.HTMLAttributes<HTMLElement>, Reac
   label?: React.ReactNode;
 }
 
+const warn = warnOnce('TabbarItemProps');
 const TabbarItem: React.FunctionComponent<TabbarItemProps> = (props: TabbarItemProps) => {
   const { children, selected, label, indicator, text, ...restProps } = props;
   const platform = usePlatform();
   const Component: React.ElementType = restProps.href ? 'a' : 'div';
+
+  if (label && process.env.NODE_ENV === 'development') {
+    warn('Свойство label устарело и будет удалено в 5.0.0. Используйте indicator.');
+  }
 
   return (
     <Component
