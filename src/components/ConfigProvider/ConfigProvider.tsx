@@ -85,7 +85,7 @@ const ConfigProvider: React.FC<ConfigProviderProps> = ({
       return noop;
     }
     if (process.env.NODE_ENV === 'development' && target.hasAttribute('scheme')) {
-      warn('<body scheme> was set before VKUI mount - did you forget scheme="inherit"?');
+      warn('<body scheme> установился до маунта VKUI — возможно, вы забыли использовать scheme="inherit"?');
     }
     target.setAttribute('scheme', scheme);
     return () => target.removeAttribute('scheme');
