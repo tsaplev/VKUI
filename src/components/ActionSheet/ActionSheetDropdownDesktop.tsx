@@ -11,11 +11,11 @@ import { SharedDropdownProps } from './types';
 import { FocusTrap } from '../FocusTrap/FocusTrap';
 import './ActionSheet.css';
 
-const warn = warnOnce('ActionSheet');
 function getEl(ref: SharedDropdownProps['toggleRef']): Element | null | undefined {
   return ref && 'current' in ref ? ref.current : ref as Element | null | undefined;
 }
 
+const warn = warnOnce('ActionSheetDropdown');
 export const ActionSheetDropdownDesktop: React.FC<SharedDropdownProps> = ({
   children,
   toggleRef,
@@ -39,7 +39,7 @@ export const ActionSheetDropdownDesktop: React.FC<SharedDropdownProps> = ({
     const toggleEl = getEl(toggleRef);
     if (!toggleEl) {
       if (process.env.NODE_ENV === 'development') {
-        warn('toggleRef not passed');
+        warn('Не передан toggleRef');
       }
       return;
     }
