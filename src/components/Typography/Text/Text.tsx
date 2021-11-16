@@ -21,7 +21,7 @@ const Text: React.FC<TextProps> = ({
   const platform = usePlatform();
 
   if (process.env.NODE_ENV === 'development' && typeof Component !== 'string' && getRootRef) {
-    warn('getRootRef can only be used with DOM components');
+    warn('getRootRef может использоваться только с элементами DOM');
   }
 
   return (
