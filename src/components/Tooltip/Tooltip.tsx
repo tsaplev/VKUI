@@ -32,9 +32,6 @@ const isDOMTypeElement = (element: React.ReactElement): element is React.DOMElem
 };
 
 const baseClassName = getClassName('Tooltip');
-const warn = warnOnce('Tooltip');
-const IS_DEV = process.env.NODE_ENV === 'development';
-
 const SimpleTooltip = React.forwardRef<HTMLDivElement, SimpleTooltipProps>(
   function SimpleTooltip(
     { mode = 'accent', header, text, arrowRef, style = {}, attributes },
@@ -128,6 +125,7 @@ function isVerticalPlacement(placement: Placement) {
   return placement.startsWith('top') || placement.startsWith('bottom');
 }
 
+const warn = warnOnce('Tooltip');
 const Tooltip: React.FC<TooltipProps> = ({
   children, isShown: _isShown, offsetX = 0, offsetY = 15,
   alignX, alignY, onClose, cornerOffset, cornerAbsoluteOffset,
@@ -139,7 +137,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   const [tooltipArrowRef, setTooltipArrowRef] = React.useState<HTMLElement>();
   const [target, setTarget] = React.useState<HTMLElement>();
 
-  if (IS_DEV) {
+  if (process.env.NODE_ENV === 'development') {
     const multiChildren = React.Children.count(children) > 1;
     // Empty children is a noop
     const primitiveChild = hasReactNode(children) && typeof children !== 'object';
@@ -157,8 +155,8 @@ const Tooltip: React.FC<TooltipProps> = ({
   /* eslint-enable @typescript-eslint/no-unnecessary-type-assertion*/
   /* eslint-enable no-restricted-properties */
 
-  if (IS_DEV && target && !tooltipContainer) {
-    throw new Error('Use TooltipContainer for Tooltip outside Panel (see docs)');
+  if (process.env.NODE_ENV === 'development' && target && !tooltipContainer) {
+    throw new Error('Используйте TooltipContainer, чтобы показать тултип вне Panel (см. документацию)');
   }
 
   const arrowOffsetModiifer = React.useMemo<ArrowOffsetModifier>(() => {
