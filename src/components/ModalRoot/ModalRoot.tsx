@@ -26,7 +26,6 @@ import { ModalTransitionProps, withModalManager } from './useModalManager';
 import './ModalRoot.css';
 
 const warn = warnOnce('ModalRoot');
-const IS_DEV = process.env.NODE_ENV === 'development';
 
 function numberInRange(number: number, range: TranslateRange) {
   return number >= range[0] && number <= range[1];
@@ -601,7 +600,9 @@ function initModal(modalState: ModalsStateEntry) {
     case ModalType.CARD:
       return initCardModal(modalState);
     default:
-      IS_DEV && warn('[initActiveModal] modalState.type is unknown');
+      if (process.env.NODE_ENV === 'development') {
+        warn('[initActiveModal] modalState.type неизвестен');
+      }
   }
 }
 
