@@ -1,20 +1,33 @@
-Здесь будет документация по `RadioGroup`!
+Помогает сгруппировать несколько `Radio`, расположив их по горизонтали или вертикали.
 
 ```jsx
-  <View activePanel="panel">
-    <Panel id="panel">
-      <PanelHeader>RadioGroup</PanelHeader>
-      <Group>
-        <FormLayout>
-          <FormItem top="Откуда списать">
-            <Radio name="radio" value="1" description="Баланс 7 320 ₽" defaultChecked>
-              VK Pay  
-            </Radio>
-            <Radio name="radio" value="2">Mastercard **** 1234</Radio>
-            <Radio name="radio" value="3" description="Заблокирована" disabled>Visa **** 4321</Radio>
-          </FormItem>
-        </FormLayout>
-      </Group>
-    </Panel>
-  </View>
+<View activePanel="panel">
+  <Panel id="panel">
+    <PanelHeader>RadioGroup</PanelHeader>
+    <Group>
+      <RadioGroup top="Выберите посадку">
+        <Radio name="fit" value="1">
+          Classic
+        </Radio>
+        <Radio name="fit" value="2">
+          Regular
+        </Radio>
+        <Radio name="fit" value="3">
+          Slim
+        </Radio>
+      </RadioGroup>
+      <RadioGroup mode="horizontal" top="Выберите размер">
+        <Radio name="size" value="s">
+          S
+        </Radio>
+        <Radio name="size" value="m">
+          M
+        </Radio>
+        <Radio name="size" value="l">
+          L
+        </Radio>
+      </RadioGroup>
+    </Group>
+  </Panel>
+</View>
 ```
