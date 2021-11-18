@@ -1,0 +1,14 @@
+.RadioGroup {
+  border: none;
+  min-width: 0; /* resets default browser styles for fieldset */
+  margin: inherit; /* resets default browser styles for fieldset */
+  box-sizing: border-box;
+}
+
+.RadioGroup__in {
+  margin: 0 calc(-1 * var(--formitem_padding));
+}
+
+.RadioGroup--horizontal .RadioGroup__in {
+  display: flex;
+}

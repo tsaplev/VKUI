@@ -8,6 +8,11 @@
   margin: 0 calc(-1 * var(--formitem_padding));
 }
 
+.RadioGroup .Radio {
+  margin: 0;
+  box-sizing: border-box;
+}
+
 .Radio__input {
   display: none;
 }
