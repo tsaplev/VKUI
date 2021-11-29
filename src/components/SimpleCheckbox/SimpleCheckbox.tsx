@@ -140,5 +140,3 @@ export const SimpleCheckbox: React.FC<SimpleCheckboxProps> = (
     </Tappable>
   );
 };
-
-export default SimpleCheckbox;
