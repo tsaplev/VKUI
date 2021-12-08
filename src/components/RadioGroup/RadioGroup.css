@@ -9,6 +9,10 @@
   margin: 0 calc(-1 * var(--formitem_padding));
 }
 
+.RadioGroup--removable .RadioGroup__in {
+  margin: 0;
+}
+
 .RadioGroup--horizontal .RadioGroup__in {
   display: flex;
 }

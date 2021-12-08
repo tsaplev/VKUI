@@ -20,7 +20,10 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
     <FormItem
       vkuiClass={classNames(
         getClassName("RadioGroup", platform),
-        `RadioGroup--${mode}`
+        `RadioGroup--${mode}`,
+        {
+          "RadioGroup--removable": restProps.removable,
+        }
       )}
       Component="fieldset"
       {...restProps}
