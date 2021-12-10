@@ -4,6 +4,25 @@
     <PanelHeader>SegmentedControl</PanelHeader>
     <Group>
       <FormItem top="Пол">
+        <SegmentedControl
+          options={[
+            {
+              label: "Мужской",
+              value: "male",
+            },
+            {
+              label: "Женский",
+              value: "female",
+            },
+            {
+              label: "Н/б",
+              value: "nonbinary",
+            },
+          ]}
+        />
+      </FormItem>
+
+      <FormItem top="Пол">
         <SliderSwitch
           options={[
             {
