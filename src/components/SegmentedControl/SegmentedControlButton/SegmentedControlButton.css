@@ -1,0 +1,37 @@
+.SegmentedControlButton {
+  flex: 1;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text_subhead);
+  transition: color 100ms ease-out;
+  user-select: none;
+  z-index: 1;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.SegmentedControlButton:hover {
+  color: var(--text_tertiary);
+}
+
+.SegmentedControlButton--active {
+  color: var(--text_primary);
+  transition: transform 150ms ease-in;
+}
+
+.SegmentedControlButton--active:hover {
+  color: var(--header_alternate_tab_active_text);
+}
+
+.SegmentedControlButton--ios {
+  border-radius: 10px;
+}
