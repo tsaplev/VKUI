@@ -20,24 +20,16 @@ export const SegmentedControlButton: React.FC<SegmentedControlButtonProps> = ({
   ...restProps
 }) => {
   const platform = usePlatform();
-  const [focus, setFocus] = React.useState(false);
-
-  const toggleFocus = () => {
-    setFocus(!focus);
-  };
 
   return (
     <Tappable
       {...restProps}
       vkuiClass={classNames(getClassName("SegmentedControlButton", platform), {
         ["SegmentedControlButton--active"]: active,
-        ["SegmentedControlButton--focus"]: focus,
       })}
       Component="button"
       getRootRef={getRootRef}
       aria-pressed={active}
-      onFocus={toggleFocus}
-      onBlur={toggleFocus}
       hasActive={false}
       hoverMode="opacity"
     >
