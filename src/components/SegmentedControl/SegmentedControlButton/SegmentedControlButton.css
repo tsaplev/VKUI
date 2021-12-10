@@ -10,7 +10,7 @@
   box-sizing: border-box;
   cursor: pointer;
   background: transparent;
-  border-radius: 8px;
+  border-radius: inherit;
   color: var(--text_subhead);
   transition: color 100ms ease-out;
   user-select: none;
@@ -30,8 +30,4 @@
 
 .SegmentedControlButton--active:hover {
   color: var(--header_alternate_tab_active_text);
-}
-
-.SegmentedControlButton--ios {
-  border-radius: 10px;
 }

@@ -12,14 +12,18 @@
   height: 100%;
   width: 100%;
   transition: all 100ms ease-out;
+  border-radius: inherit;
 }
 
 .SegmentedControl__slider {
   position: absolute;
   top: 0;
   left: 0;
-  border-radius: 6px;
+  height: 40px;
+  background-color: var(--background_content);
   transition: transform 150ms;
+  transform-origin: 0 0;
+  border-radius: inherit;
 }
 
 /*
